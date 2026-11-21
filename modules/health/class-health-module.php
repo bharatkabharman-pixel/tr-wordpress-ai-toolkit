@@ -313,6 +313,40 @@ class TR_AI_Toolkit_Health_Module {
 		);
 	}
 
+	public function handles( string $name ): bool {
+		return in_array( $name, array(
+			'tr-ai-toolkit/get-wordpress-info', 'tr-ai-toolkit/get-php-version',
+			'tr-ai-toolkit/get-active-plugins', 'tr-ai-toolkit/get-active-theme',
+			'tr-ai-toolkit/get-site-health-summary', 'tr-ai-toolkit/get-permalink-structure',
+			'tr-ai-toolkit/get-cron-status',
+		), true );
+	}
+
+	public function execute( string $name, array $args ): mixed {
+		return match ( $name ) {
+			'tr-ai-toolkit/get-wordpress-info'      => $this->execute_get_wordpress_info( $args ),
+			'tr-ai-toolkit/get-php-version'         => $this->execute_get_php_version( $args ),
+			'tr-ai-toolkit/get-active-plugins'      => $this->execute_get_active_plugins( $args ),
+			'tr-ai-toolkit/get-active-theme'        => $this->execute_get_active_theme( $args ),
+			'tr-ai-toolkit/get-site-health-summary' => $this->execute_get_site_health_summary( $args ),
+			'tr-ai-toolkit/get-permalink-structure' => $this->execute_get_permalink_structure( $args ),
+			'tr-ai-toolkit/get-cron-status'         => $this->execute_get_cron_status( $args ),
+			default                                 => new \WP_Error( 'not_found', "Unknown tool: {$name}" ),
+		};
+	}
+
+	public function get_mcp_tools(): array {
+		return array(
+			array( 'name' => 'tr-ai-toolkit/get-wordpress-info', 'description' => 'Returns WordPress version, site URL, admin URL, timezone, language and multisite status.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit/get-php-version', 'description' => 'Returns PHP version, loaded extensions and key configuration values.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit/get-active-plugins', 'description' => 'Returns the list of active plugins with name, version, author and description.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit/get-active-theme', 'description' => 'Returns the active theme name, version, author and template hierarchy.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit/get-site-health-summary', 'description' => 'Returns post/page/media counts, memory limit, debug mode and update status.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit/get-permalink-structure', 'description' => 'Returns permalink structure, category and tag base URLs.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit/get-cron-status', 'description' => 'Returns scheduled WP-Cron events with next run times.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+		);
+	}
+
 	/** @param array<string, mixed> $input */
 	private function execute_get_cron_status( array $input ): array {
 		$cron_disabled = defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON;

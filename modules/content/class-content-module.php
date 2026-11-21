@@ -989,6 +989,55 @@ class TR_AI_Toolkit_Content_Module {
 		);
 	}
 
+	public function handles( string $name ): bool {
+		return in_array( $name, array(
+			'tr-ai-toolkit/list-posts', 'tr-ai-toolkit/get-post', 'tr-ai-toolkit/search-posts',
+			'tr-ai-toolkit/create-post', 'tr-ai-toolkit/update-post', 'tr-ai-toolkit/delete-post',
+			'tr-ai-toolkit/list-pages', 'tr-ai-toolkit/get-page', 'tr-ai-toolkit/create-page',
+			'tr-ai-toolkit/update-page', 'tr-ai-toolkit/list-categories', 'tr-ai-toolkit/create-category',
+			'tr-ai-toolkit/list-tags', 'tr-ai-toolkit/create-tag',
+		), true );
+	}
+
+	public function execute( string $name, array $args ): mixed {
+		return match ( $name ) {
+			'tr-ai-toolkit/list-posts'      => $this->execute_list_posts( $args ),
+			'tr-ai-toolkit/get-post'        => $this->execute_get_post( $args ),
+			'tr-ai-toolkit/search-posts'    => $this->execute_search_posts( $args ),
+			'tr-ai-toolkit/create-post'     => $this->execute_create_post( $args ),
+			'tr-ai-toolkit/update-post'     => $this->execute_update_post( $args ),
+			'tr-ai-toolkit/delete-post'     => $this->execute_delete_post( $args ),
+			'tr-ai-toolkit/list-pages'      => $this->execute_list_pages( $args ),
+			'tr-ai-toolkit/get-page'        => $this->execute_get_page( $args ),
+			'tr-ai-toolkit/create-page'     => $this->execute_create_page( $args ),
+			'tr-ai-toolkit/update-page'     => $this->execute_update_page( $args ),
+			'tr-ai-toolkit/list-categories' => $this->execute_list_categories( $args ),
+			'tr-ai-toolkit/create-category' => $this->execute_create_category( $args ),
+			'tr-ai-toolkit/list-tags'       => $this->execute_list_tags( $args ),
+			'tr-ai-toolkit/create-tag'      => $this->execute_create_tag( $args ),
+			default                         => new \WP_Error( 'not_found', "Unknown tool: {$name}" ),
+		};
+	}
+
+	public function get_mcp_tools(): array {
+		return array(
+			array( 'name' => 'tr-ai-toolkit/list-posts', 'description' => 'Returns a paginated list of posts. Supports filtering by status, category ID, tag ID and author ID.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer', 'description' => 'Posts per page (1-100). Default 10.' ), 'page' => array( 'type' => 'integer' ), 'status' => array( 'type' => 'string', 'description' => 'publish, draft, pending, private, any. Default publish.' ), 'category_id' => array( 'type' => 'integer' ), 'tag_id' => array( 'type' => 'integer' ), 'author_id' => array( 'type' => 'integer' ), 'orderby' => array( 'type' => 'string' ), 'order' => array( 'type' => 'string' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/get-post', 'description' => 'Returns full details of a single post by ID, including content, metadata, categories, tags and featured image.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'post_id' ), 'properties' => array( 'post_id' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/search-posts', 'description' => 'Full-text search across post titles and content.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'query' ), 'properties' => array( 'query' => array( 'type' => 'string' ), 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ), 'status' => array( 'type' => 'string' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/create-post', 'description' => 'Creates a new WordPress post. Status defaults to draft for safety.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'title' ), 'properties' => array( 'title' => array( 'type' => 'string' ), 'content' => array( 'type' => 'string' ), 'excerpt' => array( 'type' => 'string' ), 'status' => array( 'type' => 'string', 'description' => 'draft, pending, or publish. Default draft.' ), 'category_ids' => array( 'type' => 'array' ), 'tag_ids' => array( 'type' => 'array' ), 'author_id' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/update-post', 'description' => 'Updates an existing post. Only the fields you supply will change.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'post_id' ), 'properties' => array( 'post_id' => array( 'type' => 'integer' ), 'title' => array( 'type' => 'string' ), 'content' => array( 'type' => 'string' ), 'excerpt' => array( 'type' => 'string' ), 'status' => array( 'type' => 'string' ), 'category_ids' => array( 'type' => 'array' ), 'tag_ids' => array( 'type' => 'array' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/delete-post', 'description' => 'Moves a post to the trash. The post is NOT permanently deleted.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'post_id' ), 'properties' => array( 'post_id' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/list-pages', 'description' => 'Returns a paginated list of WordPress pages.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ), 'status' => array( 'type' => 'string' ), 'parent_id' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/get-page', 'description' => 'Returns full details of a single page by ID.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'page_id' ), 'properties' => array( 'page_id' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/create-page', 'description' => 'Creates a new WordPress page. Status defaults to draft.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'title' ), 'properties' => array( 'title' => array( 'type' => 'string' ), 'content' => array( 'type' => 'string' ), 'status' => array( 'type' => 'string' ), 'parent_id' => array( 'type' => 'integer' ), 'template' => array( 'type' => 'string' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/update-page', 'description' => 'Updates an existing page. Only supplied fields change.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'page_id' ), 'properties' => array( 'page_id' => array( 'type' => 'integer' ), 'title' => array( 'type' => 'string' ), 'content' => array( 'type' => 'string' ), 'status' => array( 'type' => 'string' ), 'parent_id' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/list-categories', 'description' => 'Returns all post categories with ID, name, slug and post count.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit/create-category', 'description' => 'Creates a new post category.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'name' ), 'properties' => array( 'name' => array( 'type' => 'string' ), 'slug' => array( 'type' => 'string' ), 'parent_id' => array( 'type' => 'integer' ), 'description' => array( 'type' => 'string' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/list-tags', 'description' => 'Returns all post tags with ID, name, slug and post count.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit/create-tag', 'description' => 'Creates a new post tag.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'name' ), 'properties' => array( 'name' => array( 'type' => 'string' ), 'slug' => array( 'type' => 'string' ), 'description' => array( 'type' => 'string' ) ) ) ),
+		);
+	}
+
 	// -------------------------------------------------------------------------
 	// Shared formatter
 	// -------------------------------------------------------------------------

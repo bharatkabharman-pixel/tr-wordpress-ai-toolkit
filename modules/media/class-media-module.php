@@ -345,6 +345,35 @@ class TR_AI_Toolkit_Media_Module {
 		);
 	}
 
+	public function handles( string $name ): bool {
+		return in_array( $name, array(
+			'tr-ai-toolkit/list-media', 'tr-ai-toolkit/get-media-details',
+			'tr-ai-toolkit/search-media', 'tr-ai-toolkit/update-media-metadata',
+			'tr-ai-toolkit/find-unused-media',
+		), true );
+	}
+
+	public function execute( string $name, array $args ): mixed {
+		return match ( $name ) {
+			'tr-ai-toolkit/list-media'            => $this->execute_list_media( $args ),
+			'tr-ai-toolkit/get-media-details'     => $this->execute_get_media_details( $args ),
+			'tr-ai-toolkit/search-media'          => $this->execute_search_media( $args ),
+			'tr-ai-toolkit/update-media-metadata' => $this->execute_update_media_metadata( $args ),
+			'tr-ai-toolkit/find-unused-media'     => $this->execute_find_unused_media( $args ),
+			default                               => new \WP_Error( 'not_found', "Unknown tool: {$name}" ),
+		};
+	}
+
+	public function get_mcp_tools(): array {
+		return array(
+			array( 'name' => 'tr-ai-toolkit/list-media', 'description' => 'Browse the media library. Returns ID, filename, URL, type, size and alt text.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ), 'mime_type' => array( 'type' => 'string', 'description' => 'e.g. image/jpeg, image/png, video/mp4' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/get-media-details', 'description' => 'Returns full details of a single media attachment including all metadata.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'attachment_id' ), 'properties' => array( 'attachment_id' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/search-media', 'description' => 'Search the media library by filename or title.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'query' ), 'properties' => array( 'query' => array( 'type' => 'string' ), 'per_page' => array( 'type' => 'integer' ), 'mime_type' => array( 'type' => 'string' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/update-media-metadata', 'description' => 'Update title, alt text or caption of a media attachment.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'attachment_id' ), 'properties' => array( 'attachment_id' => array( 'type' => 'integer' ), 'title' => array( 'type' => 'string' ), 'alt_text' => array( 'type' => 'string' ), 'caption' => array( 'type' => 'string' ), 'description' => array( 'type' => 'string' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/find-unused-media', 'description' => 'Find media files not attached to any post or used as featured image.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer', 'description' => 'Max results (1-100). Default 20.' ) ) ) ),
+		);
+	}
+
 	/**
 	 * Formats a WP_Post (attachment) into a standard response.
 	 *

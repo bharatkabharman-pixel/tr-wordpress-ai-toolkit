@@ -55,11 +55,9 @@ class TR_AI_Toolkit_Plugin {
 			( new TR_AI_Toolkit_Admin( $this->settings, $this->abilities_manager, $this->logger ) )->init();
 		}
 
-		// MCP server registration (only when MCP Adapter is active).
-		if ( function_exists( 'wp_register_ability' ) ) {
-			require_once TR_AI_TOOLKIT_PATH . 'integrations/mcp-adapter/class-mcp-server.php';
-			( new TR_AI_Toolkit_MCP_Server( $this->settings ) )->init();
-		}
+		// MCP server — registers /wp-json/tr-ai-toolkit/mcp directly via REST API.
+		require_once TR_AI_TOOLKIT_PATH . 'integrations/mcp-adapter/class-mcp-server.php';
+		( new TR_AI_Toolkit_MCP_Server( $this->settings, $this->abilities_manager ) )->init();
 
 		do_action( 'tr_ai_toolkit_loaded', $this );
 	}

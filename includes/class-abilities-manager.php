@@ -133,4 +133,52 @@ class TR_AI_Toolkit_Abilities_Manager {
 	public function get_modules(): array {
 		return $this->modules;
 	}
+
+	/**
+	 * Returns MCP tool definitions for all active modules.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function get_mcp_tools(): array {
+		$this->ensure_modules_loaded();
+
+		$tools = array();
+		foreach ( $this->modules as $module ) {
+			if ( method_exists( $module, 'get_mcp_tools' ) ) {
+				foreach ( $module->get_mcp_tools() as $tool ) {
+					$tools[] = $tool;
+				}
+			}
+		}
+
+		return $tools;
+	}
+
+	/**
+	 * Executes an MCP tool by name, delegating to the responsible module.
+	 *
+	 * @param string               $name Tool name.
+	 * @param array<string, mixed> $args Tool arguments.
+	 * @return mixed
+	 */
+	public function execute_mcp_tool( string $name, array $args ): mixed {
+		$this->ensure_modules_loaded();
+
+		foreach ( $this->modules as $module ) {
+			if ( method_exists( $module, 'handles' ) && $module->handles( $name ) ) {
+				return $module->execute( $name, $args );
+			}
+		}
+
+		return new \WP_Error( 'not_found', "Tool '{$name}' not found.", array( 'status' => 404 ) );
+	}
+
+	/**
+	 * Loads modules if they haven't been loaded yet.
+	 */
+	private function ensure_modules_loaded(): void {
+		if ( empty( $this->modules ) ) {
+			$this->register_abilities();
+		}
+	}
 }

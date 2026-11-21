@@ -359,6 +359,36 @@ class TR_AI_Toolkit_SEO_Module {
 		);
 	}
 
+	public function handles( string $name ): bool {
+		return in_array( $name, array(
+			'tr-ai-toolkit/get-seo-summary', 'tr-ai-toolkit/find-missing-meta-titles',
+			'tr-ai-toolkit/find-missing-meta-descriptions',
+			'tr-ai-toolkit/find-posts-without-featured-images',
+			'tr-ai-toolkit/analyze-content-structure',
+		), true );
+	}
+
+	public function execute( string $name, array $args ): mixed {
+		return match ( $name ) {
+			'tr-ai-toolkit/get-seo-summary'                    => $this->execute_get_seo_summary( $args ),
+			'tr-ai-toolkit/find-missing-meta-titles'           => $this->execute_find_missing_meta( $args, 'title' ),
+			'tr-ai-toolkit/find-missing-meta-descriptions'     => $this->execute_find_missing_meta( $args, 'description' ),
+			'tr-ai-toolkit/find-posts-without-featured-images' => $this->execute_find_posts_without_featured_images( $args ),
+			'tr-ai-toolkit/analyze-content-structure'          => $this->execute_analyze_content_structure( $args ),
+			default                                            => new \WP_Error( 'not_found', "Unknown tool: {$name}" ),
+		};
+	}
+
+	public function get_mcp_tools(): array {
+		return array(
+			array( 'name' => 'tr-ai-toolkit/get-seo-summary', 'description' => 'Returns a site-wide SEO health overview including post counts, missing meta, and plugin detection.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit/find-missing-meta-titles', 'description' => 'Returns posts that are missing SEO meta titles (checks Yoast, Rank Math, AIOSEO).', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/find-missing-meta-descriptions', 'description' => 'Returns posts that are missing SEO meta descriptions.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/find-posts-without-featured-images', 'description' => 'Returns published posts that have no featured image set.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/analyze-content-structure', 'description' => 'Analyses a single post for SEO signals: headings, word count, links, images, meta.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'post_id' ), 'properties' => array( 'post_id' => array( 'type' => 'integer' ) ) ) ),
+		);
+	}
+
 	// -------------------------------------------------------------------------
 	// Helpers
 	// -------------------------------------------------------------------------

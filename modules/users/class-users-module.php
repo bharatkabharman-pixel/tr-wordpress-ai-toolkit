@@ -236,6 +236,32 @@ class TR_AI_Toolkit_Users_Module {
 		return array( 'roles' => $roles, 'total' => count( $roles ) );
 	}
 
+	public function handles( string $name ): bool {
+		return in_array( $name, array(
+			'tr-ai-toolkit/list-users', 'tr-ai-toolkit/get-user',
+			'tr-ai-toolkit/search-users', 'tr-ai-toolkit/get-user-roles',
+		), true );
+	}
+
+	public function execute( string $name, array $args ): mixed {
+		return match ( $name ) {
+			'tr-ai-toolkit/list-users'     => $this->execute_list_users( $args ),
+			'tr-ai-toolkit/get-user'       => $this->execute_get_user( $args ),
+			'tr-ai-toolkit/search-users'   => $this->execute_search_users( $args ),
+			'tr-ai-toolkit/get-user-roles' => $this->execute_get_user_roles( $args ),
+			default                        => new \WP_Error( 'not_found', "Unknown tool: {$name}" ),
+		};
+	}
+
+	public function get_mcp_tools(): array {
+		return array(
+			array( 'name' => 'tr-ai-toolkit/list-users', 'description' => 'Returns a paginated list of users. Email addresses are masked for privacy.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ), 'role' => array( 'type' => 'string', 'description' => 'Filter by role: administrator, editor, author, contributor, subscriber.' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/get-user', 'description' => 'Returns profile details of a single user by ID. Email is masked.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'user_id' ), 'properties' => array( 'user_id' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/search-users', 'description' => 'Search users by display name or username. Email is never returned.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'query' ), 'properties' => array( 'query' => array( 'type' => 'string' ), 'per_page' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit/get-user-roles', 'description' => 'Returns all registered user roles with their display names and key capabilities.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+		);
+	}
+
 	// -------------------------------------------------------------------------
 	// Formatter
 	// -------------------------------------------------------------------------

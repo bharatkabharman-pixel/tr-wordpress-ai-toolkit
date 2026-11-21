@@ -1,13 +1,6 @@
 <?php
 /**
- * MCP Server registration.
- *
- * Uses the official WordPress MCP Adapter plugin (mcp-adapter) hook to register
- * a dedicated MCP server that exposes the TR AI Toolkit abilities.
- *
- * The default MCP Adapter server also exposes any ability with meta.mcp.public = true,
- * so abilities are always reachable on the default server without this class.
- * This class creates an *additional* named server for cleaner AI client configuration.
+ * MCP Server — implements Model Context Protocol directly via WordPress REST API.
  *
  * @package TRWordPressAIToolkit
  */
@@ -15,90 +8,164 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers a named MCP server via the mcp_adapter_init hook.
+ * Handles MCP protocol at /wp-json/tr-ai-toolkit/mcp independently of the MCP Adapter plugin.
  */
 class TR_AI_Toolkit_MCP_Server {
 
-	private TR_AI_Toolkit_Settings $settings;
+	private TR_AI_Toolkit_Settings          $settings;
+	private TR_AI_Toolkit_Abilities_Manager $abilities_manager;
 
-	public function __construct( TR_AI_Toolkit_Settings $settings ) {
-		$this->settings = $settings;
+	public function __construct(
+		TR_AI_Toolkit_Settings $settings,
+		TR_AI_Toolkit_Abilities_Manager $abilities_manager
+	) {
+		$this->settings          = $settings;
+		$this->abilities_manager = $abilities_manager;
 	}
 
-	/**
-	 * Attaches the mcp_adapter_init hook when the MCP Adapter plugin is active.
-	 */
 	public function init(): void {
-		add_action( 'mcp_adapter_init', array( $this, 'register_server' ) );
+		add_action( 'rest_api_init', array( $this, 'register_route' ) );
 	}
 
-	/**
-	 * Creates the TR AI Toolkit MCP server.
-	 *
-	 * @param object $adapter The MCP Adapter instance passed by mcp_adapter_init.
-	 */
-	public function register_server( object $adapter ): void {
-		if ( ! method_exists( $adapter, 'create_server' ) ) {
-			return;
+	public function register_route(): void {
+		register_rest_route(
+			'tr-ai-toolkit',
+			'/mcp',
+			array(
+				array(
+					'methods'             => array( 'GET', 'POST' ),
+					'callback'            => array( $this, 'handle_request' ),
+					'permission_callback' => '__return_true',
+				),
+				array(
+					'methods'             => 'DELETE',
+					'callback'            => array( $this, 'handle_delete' ),
+					'permission_callback' => '__return_true',
+				),
+			)
+		);
+	}
+
+	public function handle_request( \WP_REST_Request $request ): \WP_REST_Response {
+		if ( ! is_user_logged_in() ) {
+			return $this->mcp_error( null, -32001, 'Unauthorized', 401 );
 		}
 
 		if ( ! $this->settings->get( 'general.plugin_enabled', true ) ) {
-			return;
+			return $this->mcp_error( null, -32000, 'TR AI Toolkit is disabled.', 503 );
 		}
+
+		$body = $request->get_json_params();
+
+		if ( ! is_array( $body ) ) {
+			return $this->mcp_error( null, -32700, 'Parse error', 400 );
+		}
+
+		$method = $body['method'] ?? '';
+		$id     = $body['id'] ?? null;
+		$params = $body['params'] ?? array();
+
+		switch ( $method ) {
+			case 'initialize':
+				return $this->handle_initialize( $id, $params );
+			case 'notifications/initialized':
+				return $this->mcp_success( $id, null );
+			case 'tools/list':
+				return $this->handle_tools_list( $id );
+			case 'tools/call':
+				return $this->handle_tools_call( $id, $params );
+			case 'ping':
+				return $this->mcp_success( $id, new \stdClass() );
+			default:
+				return $this->mcp_error( $id, -32601, 'Method not found: ' . esc_html( $method ) );
+		}
+	}
+
+	public function handle_delete( \WP_REST_Request $request ): \WP_REST_Response {
+		$session_id = $request->get_header( 'mcp-session-id' );
+		if ( $session_id ) {
+			delete_transient( 'tr_mcp_sess_' . sanitize_key( $session_id ) );
+		}
+		return new \WP_REST_Response( null, 200 );
+	}
+
+	private function handle_initialize( mixed $id, array $params ): \WP_REST_Response {
+		$session_id = wp_generate_uuid4();
+		set_transient( 'tr_mcp_sess_' . $session_id, 1, HOUR_IN_SECONDS );
 
 		$server_name = sanitize_text_field(
 			$this->settings->get( 'mcp.server_name', get_bloginfo( 'name' ) . ' - TR AI Toolkit' )
 		);
 
-		/**
-		 * The mcp_adapter_init hook fires after all abilities are registered.
-		 * We pass an empty abilities array here because abilities are auto-discovered
-		 * via the meta.mcp.public flag on each registered ability. The dedicated
-		 * server provides a clean endpoint URL for AI client configuration.
-		 *
-		 * Transport: WP\MCP\Transport\HttpTransport provides the REST API endpoint.
-		 * Endpoint format: /wp-json/tr-ai-toolkit/mcp
-		 *
-		 * See: https://github.com/WordPress/mcp-adapter/blob/trunk/docs/getting-started/README.md
-		 */
-		try {
-			$adapter->create_server(
-				'tr-ai-toolkit',          // Server ID.
-				'tr-ai-toolkit',          // REST namespace.
-				'mcp',                    // REST route slug → /wp-json/tr-ai-toolkit/mcp
-				$server_name,             // Human-readable name.
-				__( 'TR WordPress AI Toolkit — manage content, media, SEO and site health using AI.', 'tr-wordpress-ai-toolkit' ),
-				TR_AI_TOOLKIT_VERSION,
-				array( 'WP\\MCP\\Transport\\HttpTransport' ),
-				null,                     // Error handler: null = default WP error log.
-				null                      // Observability: null = no-op.
-			);
-		} catch ( \Throwable $e ) {
-			// The dedicated server is optional — the default server always works.
-			error_log( 'TR AI Toolkit: Could not register dedicated MCP server: ' . $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		$response = $this->mcp_success(
+			$id,
+			array(
+				'protocolVersion' => '2025-03-26',
+				'capabilities'    => array( 'tools' => new \stdClass() ),
+				'serverInfo'      => array(
+					'name'    => $server_name,
+					'version' => TR_AI_TOOLKIT_VERSION,
+				),
+			)
+		);
+
+		$response->header( 'Mcp-Session-Id', $session_id );
+		return $response;
+	}
+
+	private function handle_tools_list( mixed $id ): \WP_REST_Response {
+		return $this->mcp_success(
+			$id,
+			array( 'tools' => $this->abilities_manager->get_mcp_tools() )
+		);
+	}
+
+	private function handle_tools_call( mixed $id, array $params ): \WP_REST_Response {
+		$name = $params['name'] ?? '';
+		$args = $params['arguments'] ?? array();
+
+		if ( '' === $name ) {
+			return $this->mcp_error( $id, -32602, 'Missing tool name.' );
 		}
+
+		$result = $this->abilities_manager->execute_mcp_tool( $name, $args );
+
+		if ( is_wp_error( $result ) ) {
+			$status = (int) ( $result->get_error_data()['status'] ?? 400 );
+			if ( 403 === $status ) {
+				return $this->mcp_error( $id, -32001, $result->get_error_message(), 403 );
+			}
+			return $this->mcp_error( $id, -32000, $result->get_error_message() );
+		}
+
+		return $this->mcp_success(
+			$id,
+			array(
+				'content' => array(
+					array( 'type' => 'text', 'text' => wp_json_encode( $result ) ),
+				),
+			)
+		);
 	}
 
-	/**
-	 * Returns the HTTP endpoint URL for the dedicated MCP server.
-	 *
-	 * Falls back to the default MCP Adapter endpoint if our server
-	 * registration failed or the adapter version does not support it.
-	 *
-	 * @return string
-	 */
+	private function mcp_success( mixed $id, mixed $result ): \WP_REST_Response {
+		return new \WP_REST_Response(
+			array( 'jsonrpc' => '2.0', 'id' => $id, 'result' => $result ),
+			200
+		);
+	}
+
+	private function mcp_error( mixed $id, int $code, string $message, int $http_status = 200 ): \WP_REST_Response {
+		return new \WP_REST_Response(
+			array( 'jsonrpc' => '2.0', 'id' => $id, 'error' => array( 'code' => $code, 'message' => $message ) ),
+			$http_status
+		);
+	}
+
 	public static function get_endpoint_url(): string {
-		$dedicated = rest_url( 'tr-ai-toolkit/mcp' );
-		$default   = rest_url( 'mcp/mcp' );
-
-		return $dedicated ?: $default;
+		return rest_url( 'tr-ai-toolkit/mcp' );
 	}
 
-	/**
-	 * Returns the STDIO WP-CLI command for use in Claude Desktop configuration.
-	 *
-	 * @return string
-	 */
 	public static function get_stdio_command(): string {
 		return 'wp mcp-adapter serve --server=tr-ai-toolkit --user=<your-admin-username>';
 	}
