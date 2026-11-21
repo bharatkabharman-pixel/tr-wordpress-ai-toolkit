@@ -168,6 +168,56 @@
 	}
 
 	// -------------------------------------------------------------------------
+	// Manual credentials encoder (pure JS — no server call needed)
+	// -------------------------------------------------------------------------
+	document.addEventListener('DOMContentLoaded', function () {
+		var encodeBtn = document.getElementById('tr-encode-btn');
+		if (!encodeBtn) return;
+
+		encodeBtn.addEventListener('click', function () {
+			var username  = (document.getElementById('tr-manual-username').value || '').trim();
+			var appPass   = (document.getElementById('tr-manual-apppass').value || '').trim();
+			var resultDiv = document.getElementById('tr-manual-result');
+			var authEl    = document.getElementById('tr-manual-auth-value');
+			var jsonEl    = document.getElementById('tr-manual-json');
+
+			if (!username || !appPass) {
+				alert('Please enter both username and application password.');
+				return;
+			}
+
+			var encoded   = btoa(username + ':' + appPass);
+			var authValue = 'Basic ' + encoded;
+			var mcpUrl    = document.getElementById('tr-endpoint') ? document.getElementById('tr-endpoint').textContent.trim() : '';
+
+			var config = {
+				mcpServers: {
+					'tr-ai-toolkit': {
+						type: 'http',
+						url: mcpUrl,
+						headers: { Authorization: authValue }
+					}
+				}
+			};
+
+			if (authEl)  authEl.textContent  = authValue;
+			if (jsonEl)  jsonEl.textContent   = JSON.stringify(config, null, 2);
+			if (resultDiv) {
+				resultDiv.style.display = 'block';
+				resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+				// re-attach copy handlers for newly shown elements
+				resultDiv.querySelectorAll('.tr-copy-btn').forEach(function (btn) {
+					btn.onclick = function () {
+						var t = document.getElementById(btn.getAttribute('data-target'));
+						if (t) copyText(t.textContent || t.innerText, btn);
+					};
+				});
+			}
+		});
+	});
+
+	// -------------------------------------------------------------------------
 	// Auto-dismiss admin notices after 5 seconds
 	// -------------------------------------------------------------------------
 	document.addEventListener('DOMContentLoaded', function () {

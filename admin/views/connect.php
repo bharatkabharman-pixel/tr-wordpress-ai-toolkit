@@ -218,6 +218,56 @@ defined( 'ABSPATH' ) || exit;
 		</div>
 	</div>
 
+	<!-- =====================================================================
+	     MANUAL CREDENTIALS ENCODER
+	====================================================================== -->
+	<div class="tr-section">
+		<h2>
+			<span class="dashicons dashicons-admin-network" style="color:#2271b1;vertical-align:middle;margin-right:6px;"></span>
+			<?php esc_html_e( 'Use Your Own Credentials', 'tr-wordpress-ai-toolkit' ); ?>
+		</h2>
+		<p style="font-size:14px;color:#3c434a;">
+			<?php esc_html_e( 'Already have an Application Password? Enter your WordPress username and password below — we\'ll generate the Authorization header value instantly.', 'tr-wordpress-ai-toolkit' ); ?>
+		</p>
+
+		<table class="form-table" style="max-width:600px;">
+			<tr>
+				<th style="width:180px;"><?php esc_html_e( 'WordPress Username', 'tr-wordpress-ai-toolkit' ); ?></th>
+				<td><input type="text" id="tr-manual-username" class="regular-text" placeholder="admin" autocomplete="off"></td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Application Password', 'tr-wordpress-ai-toolkit' ); ?></th>
+				<td>
+					<input type="text" id="tr-manual-apppass" class="regular-text" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx" autocomplete="off">
+					<p class="description"><?php esc_html_e( 'From Users → Profile → Application Passwords', 'tr-wordpress-ai-toolkit' ); ?></p>
+				</td>
+			</tr>
+		</table>
+
+		<button id="tr-encode-btn" class="button button-primary" type="button" style="margin-top:8px;">
+			<?php esc_html_e( 'Generate Authorization Header', 'tr-wordpress-ai-toolkit' ); ?>
+		</button>
+
+		<div id="tr-manual-result" style="display:none;margin-top:20px;">
+			<div class="tr-connect-block" style="background:#f0f6fc;border-color:#72aee6;">
+				<div class="tr-connect-block-title">
+					<span class="dashicons dashicons-yes-alt" style="color:#0a7227;"></span>
+					<?php esc_html_e( 'Your Authorization Header', 'tr-wordpress-ai-toolkit' ); ?>
+				</div>
+				<p style="margin:0 0 8px;font-size:13px;"><?php esc_html_e( 'Paste this as the header value in Claude.ai connector (Header Name: Authorization):', 'tr-wordpress-ai-toolkit' ); ?></p>
+				<div class="tr-field-row">
+					<code class="tr-copyable tr-copyable-block" id="tr-manual-auth-value" style="font-size:12px;"></code>
+					<button class="button button-small tr-copy-btn" data-target="tr-manual-auth-value"><?php esc_html_e( 'Copy', 'tr-wordpress-ai-toolkit' ); ?></button>
+				</div>
+				<p style="margin:12px 0 0;font-size:13px;"><?php esc_html_e( 'Complete Claude Desktop JSON config:', 'tr-wordpress-ai-toolkit' ); ?></p>
+				<div class="tr-code-wrapper">
+					<pre class="tr-code-block" id="tr-manual-json" style="font-size:12px;"></pre>
+					<button class="button button-small tr-copy-btn tr-code-copy-btn" data-target="tr-manual-json"><?php esc_html_e( 'Copy Config', 'tr-wordpress-ai-toolkit' ); ?></button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<!-- STDIO Transport (Claude Desktop local / WP-CLI) -->
 	<div class="tr-section">
 		<h2><?php esc_html_e( 'STDIO Transport (Claude Desktop — Local Server)', 'tr-wordpress-ai-toolkit' ); ?></h2>
