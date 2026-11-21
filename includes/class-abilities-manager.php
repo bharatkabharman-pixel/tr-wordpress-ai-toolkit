@@ -71,28 +71,40 @@ class TR_AI_Toolkit_Abilities_Manager {
 	 * Loads module files and triggers ability registration on each active module.
 	 */
 	public function register_abilities(): void {
-		$exposed = (array) $this->settings->get( 'mcp.exposed_modules', array( 'content', 'media', 'seo', 'health', 'users' ) );
+		$exposed = (array) $this->settings->get( 'mcp.exposed_modules', array( 'content', 'media', 'seo', 'health', 'users', 'woocommerce', 'comments', 'cpt' ) );
 
 		$module_map = array(
-			'content' => array(
+			'content'     => array(
 				'file'  => TR_AI_TOOLKIT_PATH . 'modules/content/class-content-module.php',
 				'class' => 'TR_AI_Toolkit_Content_Module',
 			),
-			'media'   => array(
+			'media'       => array(
 				'file'  => TR_AI_TOOLKIT_PATH . 'modules/media/class-media-module.php',
 				'class' => 'TR_AI_Toolkit_Media_Module',
 			),
-			'seo'     => array(
+			'seo'         => array(
 				'file'  => TR_AI_TOOLKIT_PATH . 'modules/seo/class-seo-module.php',
 				'class' => 'TR_AI_Toolkit_SEO_Module',
 			),
-			'health'  => array(
+			'health'      => array(
 				'file'  => TR_AI_TOOLKIT_PATH . 'modules/health/class-health-module.php',
 				'class' => 'TR_AI_Toolkit_Health_Module',
 			),
-			'users'   => array(
+			'users'       => array(
 				'file'  => TR_AI_TOOLKIT_PATH . 'modules/users/class-users-module.php',
 				'class' => 'TR_AI_Toolkit_Users_Module',
+			),
+			'woocommerce' => array(
+				'file'  => TR_AI_TOOLKIT_PATH . 'modules/woocommerce/class-woocommerce-module.php',
+				'class' => 'TR_AI_Toolkit_WooCommerce_Module',
+			),
+			'comments'    => array(
+				'file'  => TR_AI_TOOLKIT_PATH . 'modules/comments/class-comments-module.php',
+				'class' => 'TR_AI_Toolkit_Comments_Module',
+			),
+			'cpt'         => array(
+				'file'  => TR_AI_TOOLKIT_PATH . 'modules/cpt/class-cpt-module.php',
+				'class' => 'TR_AI_Toolkit_CPT_Module',
 			),
 		);
 

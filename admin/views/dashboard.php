@@ -82,7 +82,7 @@ $status_label   = ( $mcp_adapter_active && $abilities_api_active && $plugin_enab
 			<div class="tr-card-icon"><span class="dashicons dashicons-layout"></span></div>
 			<div class="tr-card-body">
 				<h3><?php esc_html_e( 'Active Modules', 'tr-wordpress-ai-toolkit' ); ?></h3>
-				<p class="tr-big-number"><?php echo esc_html( count( $exposed_modules ) ); ?> / 5</p>
+				<p class="tr-big-number"><?php echo esc_html( count( $exposed_modules ) ); ?> / 8</p>
 			</div>
 		</div>
 
@@ -102,11 +102,14 @@ $status_label   = ( $mcp_adapter_active && $abilities_api_active && $plugin_enab
 			<tbody>
 				<?php
 				$module_info = array(
-					'content' => array( 'name' => __( 'Content', 'tr-wordpress-ai-toolkit' ),   'count' => 14, 'desc' => __( 'Posts, pages, categories, tags', 'tr-wordpress-ai-toolkit' ) ),
-					'media'   => array( 'name' => __( 'Media', 'tr-wordpress-ai-toolkit' ),     'count' => 5,  'desc' => __( 'Media library management', 'tr-wordpress-ai-toolkit' ) ),
-					'seo'     => array( 'name' => __( 'SEO', 'tr-wordpress-ai-toolkit' ),       'count' => 5,  'desc' => __( 'SEO analysis and audits', 'tr-wordpress-ai-toolkit' ) ),
-					'health'  => array( 'name' => __( 'Health', 'tr-wordpress-ai-toolkit' ),    'count' => 7,  'desc' => __( 'Site health and system info', 'tr-wordpress-ai-toolkit' ) ),
-					'users'   => array( 'name' => __( 'Users', 'tr-wordpress-ai-toolkit' ),     'count' => 4,  'desc' => __( 'User listing and roles', 'tr-wordpress-ai-toolkit' ) ),
+					'content'     => array( 'name' => __( 'Content', 'tr-wordpress-ai-toolkit' ),     'count' => 14, 'desc' => __( 'Posts, pages, categories, tags', 'tr-wordpress-ai-toolkit' ) ),
+					'media'       => array( 'name' => __( 'Media', 'tr-wordpress-ai-toolkit' ),       'count' => 5,  'desc' => __( 'Media library management', 'tr-wordpress-ai-toolkit' ) ),
+					'seo'         => array( 'name' => __( 'SEO', 'tr-wordpress-ai-toolkit' ),         'count' => 5,  'desc' => __( 'SEO analysis and audits', 'tr-wordpress-ai-toolkit' ) ),
+					'health'      => array( 'name' => __( 'Health', 'tr-wordpress-ai-toolkit' ),      'count' => 7,  'desc' => __( 'Site health and system info', 'tr-wordpress-ai-toolkit' ) ),
+					'users'       => array( 'name' => __( 'Users', 'tr-wordpress-ai-toolkit' ),       'count' => 4,  'desc' => __( 'User listing and roles', 'tr-wordpress-ai-toolkit' ) ),
+					'woocommerce' => array( 'name' => __( 'WooCommerce', 'tr-wordpress-ai-toolkit' ), 'count' => 12, 'desc' => __( 'Products, orders, customers, coupons', 'tr-wordpress-ai-toolkit' ) ),
+					'comments'    => array( 'name' => __( 'Comments', 'tr-wordpress-ai-toolkit' ),    'count' => 6,  'desc' => __( 'Comment moderation and replies', 'tr-wordpress-ai-toolkit' ) ),
+					'cpt'         => array( 'name' => __( 'Custom Post Types', 'tr-wordpress-ai-toolkit' ), 'count' => 5, 'desc' => __( 'Manage any registered CPT', 'tr-wordpress-ai-toolkit' ) ),
 				);
 				foreach ( $module_info as $slug => $info ) :
 					$active = in_array( $slug, $exposed_modules, true );

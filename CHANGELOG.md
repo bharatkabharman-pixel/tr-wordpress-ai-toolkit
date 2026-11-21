@@ -11,6 +11,16 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.0] — 2026-11-21
+
+### Added
+- **WooCommerce Module (12 tools)** — `wc-list-products`, `wc-get-product`, `wc-search-products`, `wc-create-product`, `wc-update-product`, `wc-get-low-stock-products`, `wc-list-orders`, `wc-get-order`, `wc-update-order-status`, `wc-list-customers`, `wc-list-coupons`, `wc-get-sales-summary`. Auto-disabled when WooCommerce is not active.
+- **Comments Module (6 tools)** — `get-comment-summary`, `list-comments`, `get-comment`, `approve-comment`, `trash-comment`, `reply-to-comment`
+- **Custom Post Types Module (5 tools)** — `list-post-types`, `list-cpt-posts`, `get-cpt-post`, `create-cpt-post`, `update-cpt-post`. Works with any public CPT registered on the site.
+- Dashboard module count updated to reflect 8 modules / 58 total tools
+
+---
+
 ## [1.1.0] — 2026-11-21
 
 ### Added
