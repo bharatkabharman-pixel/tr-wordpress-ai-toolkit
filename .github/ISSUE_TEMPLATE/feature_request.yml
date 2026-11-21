@@ -1,0 +1,58 @@
+name: Feature Request
+description: Suggest a new tool, module or improvement for TR WordPress AI Toolkit
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea? We'd love to hear it. Check existing issues first to avoid duplicates.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the plugin does this relate to?
+      options:
+        - New tool / ability
+        - Content module
+        - Media module
+        - SEO module
+        - Health module
+        - Users module
+        - Admin UI / Dashboard
+        - Quick Connect / credentials
+        - Prompt Library
+        - MCP server / protocol
+        - Security / permissions
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: What are you trying to do that is currently not possible?
+      placeholder: "I want to ask my AI assistant to... but the plugin doesn't support..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe what you'd like to see added or changed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any workarounds you've tried?
+
+  - type: input
+    id: ai-client
+    attributes:
+      label: AI Client You Use
+      placeholder: "Claude.ai / Claude Desktop / Cursor / other"
