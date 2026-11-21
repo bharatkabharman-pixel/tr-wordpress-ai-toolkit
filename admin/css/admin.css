@@ -1,0 +1,294 @@
+/* TR WordPress AI Toolkit — Admin Styles */
+
+.tr-ai-toolkit-wrap {
+	max-width: 1200px;
+}
+
+.tr-page-title {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 23px;
+	font-weight: 400;
+	margin-bottom: 20px;
+}
+
+.tr-page-title .dashicons {
+	font-size: 28px;
+	width: 28px;
+	height: 28px;
+	color: #2271b1;
+}
+
+.tr-version {
+	font-size: 12px;
+	font-weight: 400;
+	color: #787878;
+	background: #f0f0f1;
+	padding: 2px 8px;
+	border-radius: 10px;
+	margin-left: 4px;
+}
+
+/* -------------------------------------------------------------------------
+   Sections
+-------------------------------------------------------------------------- */
+
+.tr-section {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 20px 24px;
+	margin-bottom: 20px;
+}
+
+.tr-section h2 {
+	font-size: 16px;
+	font-weight: 600;
+	margin-top: 0;
+	margin-bottom: 16px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #f0f0f1;
+	color: #1d2327;
+}
+
+.tr-section h3 {
+	font-size: 14px;
+	font-weight: 600;
+	margin-top: 20px;
+	margin-bottom: 10px;
+	color: #1d2327;
+}
+
+/* -------------------------------------------------------------------------
+   Cards
+-------------------------------------------------------------------------- */
+
+.tr-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.tr-cards-small {
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.tr-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	padding: 20px;
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	transition: box-shadow 0.15s ease;
+}
+
+.tr-card:hover {
+	box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.tr-card-link {
+	text-decoration: none;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 8px;
+	color: #1d2327;
+	font-weight: 500;
+}
+
+.tr-card-link:hover {
+	color: #2271b1;
+	border-color: #2271b1;
+}
+
+.tr-card-link .dashicons {
+	font-size: 28px;
+	width: 28px;
+	height: 28px;
+	color: #2271b1;
+}
+
+.tr-card-icon .dashicons {
+	font-size: 32px;
+	width: 32px;
+	height: 32px;
+	color: #2271b1;
+}
+
+.tr-card-body {
+	flex: 1;
+}
+
+.tr-card-body h3 {
+	font-size: 13px;
+	font-weight: 600;
+	margin: 0 0 6px;
+	color: #787878;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+.tr-card-body p {
+	margin: 0;
+}
+
+.tr-card-status.tr-status-ok {
+	border-left: 4px solid #00a32a;
+}
+
+.tr-card-status.tr-status-warn {
+	border-left: 4px solid #d63638;
+}
+
+.tr-big-number {
+	font-size: 28px;
+	font-weight: 700;
+	color: #2271b1;
+	line-height: 1;
+}
+
+/* -------------------------------------------------------------------------
+   Badges
+-------------------------------------------------------------------------- */
+
+.tr-badge {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 20px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	line-height: 1.6;
+}
+
+.tr-badge-success {
+	background: #d7f7e1;
+	color: #1a7a2e;
+}
+
+.tr-badge-error {
+	background: #fce7e8;
+	color: #9e1a1f;
+}
+
+.tr-badge-warning {
+	background: #fef4e3;
+	color: #9a6700;
+}
+
+.tr-badge-muted {
+	background: #f0f0f1;
+	color: #787878;
+}
+
+.tr-status-badge {
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+.tr-status-badge.tr-status-ok {
+	color: #00a32a;
+}
+
+.tr-status-badge.tr-status-warn {
+	color: #d63638;
+}
+
+/* -------------------------------------------------------------------------
+   Tables
+-------------------------------------------------------------------------- */
+
+.tr-table {
+	border-collapse: collapse;
+	font-size: 13px;
+}
+
+.tr-table th {
+	font-weight: 600;
+	color: #1d2327;
+	padding: 10px 14px;
+}
+
+.tr-table td {
+	padding: 10px 14px;
+	vertical-align: middle;
+}
+
+.tr-table .description {
+	color: #787878;
+	font-size: 12px;
+}
+
+/* -------------------------------------------------------------------------
+   Code blocks and copy
+-------------------------------------------------------------------------- */
+
+.tr-code-block {
+	background: #1e1e2e;
+	color: #cdd6f4;
+	padding: 16px 20px;
+	border-radius: 6px;
+	overflow-x: auto;
+	font-size: 13px;
+	line-height: 1.6;
+	max-width: 760px;
+}
+
+code.tr-copyable {
+	background: #f0f0f1;
+	padding: 4px 10px;
+	border-radius: 4px;
+	font-size: 12px;
+	word-break: break-all;
+}
+
+.tr-copy-btn {
+	margin-left: 8px !important;
+}
+
+/* -------------------------------------------------------------------------
+   Quick links
+-------------------------------------------------------------------------- */
+
+.tr-quick-links .tr-cards {
+	gap: 12px;
+}
+
+/* -------------------------------------------------------------------------
+   Example prompts
+-------------------------------------------------------------------------- */
+
+.tr-example-prompts {
+	list-style: disc;
+	padding-left: 24px;
+}
+
+.tr-example-prompts li {
+	margin-bottom: 8px;
+}
+
+.tr-example-prompts code {
+	font-size: 12px;
+}
+
+/* -------------------------------------------------------------------------
+   Responsive
+-------------------------------------------------------------------------- */
+
+@media ( max-width: 782px ) {
+	.tr-cards {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+@media ( max-width: 480px ) {
+	.tr-cards {
+		grid-template-columns: 1fr;
+	}
+}

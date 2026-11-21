@@ -1,0 +1,86 @@
+name: Bug Report
+description: Report a bug in TR WordPress AI Toolkit
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before reporting, please search existing issues. For security vulnerabilities, email security@trsoftech.com instead.
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin Version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: wp-version
+    attributes:
+      label: WordPress Version
+      placeholder: "6.9"
+    validations:
+      required: true
+
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP Version
+      placeholder: "8.1"
+    validations:
+      required: true
+
+  - type: input
+    id: mcp-adapter-version
+    attributes:
+      label: MCP Adapter Version
+      placeholder: "0.7.2"
+    validations:
+      required: true
+
+  - type: input
+    id: ai-client
+    attributes:
+      label: AI Client
+      placeholder: "Claude.ai / Claude Desktop / other"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Connect Claude to the MCP endpoint
+        2. Send the prompt "..."
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Paste any PHP errors, Activity Log entries or MCP Inspector output.
+      render: text
