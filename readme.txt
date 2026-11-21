@@ -4,7 +4,7 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,6 +34,9 @@ Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your Word
 * **SEO (5 tools)** — Health score estimate, missing meta titles/descriptions, missing featured images, per-post content structure analysis. Supports Yoast SEO, Rank Math and All in One SEO Pack automatically.
 * **Site Health (7 tools)** — WordPress version, PHP info, active plugins, active theme, site health summary, permalink structure, cron status
 * **Users (4 tools)** — List and search users, inspect roles and capabilities
+* **WooCommerce (12 tools)** — Products, orders, customers, coupons, low-stock alerts and sales summary. Auto-detects WooCommerce; silently skipped when not active.
+* **Comments (6 tools)** — List, approve, trash and reply to comments; moderation summary
+* **Custom Post Types (5 tools)** — Discover and manage any public CPT (portfolio, testimonials, events, etc.) including custom fields
 
 = Key features =
 
@@ -41,7 +44,7 @@ Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your Word
 
 **Built-in MCP Server** — The plugin ships its own MCP endpoint (`/wp-json/tr-ai-toolkit/mcp`). No additional protocol plugin required for HTTP connections. Supports Streamable HTTP transport (MCP 2025-11-25 and 2026-07-28).
 
-**Prompt Library** — 25 curated, categorized prompts for Claude.ai covering Content, SEO, Media, Site Health, Users and advanced Power Prompts. Copy any prompt with one click.
+**Prompt Library** — 42 curated, categorized prompts for Claude.ai covering Content, SEO, Media, Site Health, Users, WooCommerce, Comments, Custom Post Types and Power Prompts. Copy any prompt with one click.
 
 **Manual Credentials Encoder** — Enter a username and Application Password directly in the admin — the plugin computes the base64 Authorization header and full configuration JSON for you.
 
@@ -112,6 +115,13 @@ A curated set of 25 ready-to-use prompts you can copy and paste directly into Cl
 
 == Changelog ==
 
+= 1.2.0 — 2026-11-21 =
+* Added: WooCommerce module with 12 tools — products, orders, customers, coupons and sales summary. Auto-detects WooCommerce.
+* Added: Comments module with 6 tools — list, approve, trash, reply and moderation summary.
+* Added: Custom Post Types module with 5 tools — discover and manage any registered CPT including custom fields.
+* Added: 17 new prompts in Prompt Library (WooCommerce, Comments, CPT categories).
+* Total: 35 → 58 tools, 5 → 8 modules, 25 → 42 prompts.
+
 = 1.1.0 — 2026-11-21 =
 * Added: Prompt Library — 25 categorized ready-to-use AI prompts with copy button and category filter (Content, SEO, Media, Health, Users, Power Prompts)
 * Added: Quick Connect — one-click Application Password generation with ready-to-paste Claude.ai config
@@ -133,6 +143,9 @@ A curated set of 25 ready-to-use prompts you can copy and paste directly into Cl
 * Full audit logging with configurable retention.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Major update: adds WooCommerce (12 tools), Comments (6 tools) and Custom Post Types (5 tools) modules. 58 total tools.
 
 = 1.1.0 =
 Recommended update: adds Quick Connect, Prompt Library and fixes MCP tools/list returning empty.

@@ -2,7 +2,7 @@
 
 > Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site — manage content, media, SEO and site health using natural language.
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/bharatkabharman-pixel/tr-wordpress-ai-toolkit/releases)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/bharatkabharman-pixel/tr-wordpress-ai-toolkit/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.9%2B-21759b.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777bb4.svg)](https://php.net)
 [![License](https://img.shields.io/badge/license-GPL--2.0--or--later-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -55,13 +55,13 @@ Generate an Application Password and a ready-to-paste Claude.ai / Claude Desktop
 ### Built-in MCP Server
 The plugin ships its own MCP endpoint at `/wp-json/tr-ai-toolkit/mcp`. No separate protocol plugin required. Supports both **Streamable HTTP** (MCP 2025-11-25 and 2026-07-28) and **STDIO** transports.
 
-### 25-Prompt Library
-A categorized library of ready-to-use prompts for Claude.ai — covering Content, SEO, Media, Site Health, Users and Power Prompts. Copy any prompt with one click.
+### 42-Prompt Library
+A categorized library of 42 ready-to-use prompts for Claude.ai — covering Content, SEO, Media, Site Health, Users, WooCommerce, Comments, Custom Post Types and Power Prompts. Copy any prompt with one click.
 
 ### Manual Credentials Encoder
 Enter a WordPress username and Application Password directly in the admin — the plugin computes the base64 `Authorization` header and the full Claude.ai config JSON for you.
 
-### 35 WordPress Abilities Across 5 Modules
+### 58 WordPress Abilities Across 8 Modules
 
 | Module | Tools | Highlights |
 |--------|-------|------------|
@@ -70,6 +70,9 @@ Enter a WordPress username and Application Password directly in the admin — th
 | SEO | 5 | Health score, missing titles/descriptions/images, per-post structure analysis |
 | Health | 7 | WP version, PHP info, plugins, theme, cron, permalinks, memory |
 | Users | 4 | List, search users, inspect roles and capabilities |
+| WooCommerce | 12 | Products, orders, customers, coupons, sales summary (auto-detects WC) |
+| Comments | 6 | List, approve, trash, reply to comments; moderation summary |
+| Custom Post Types | 5 | Discover and manage any registered CPT with custom fields |
 
 ### Security First
 Every tool has a `permission_callback` that checks the authenticated user's WordPress capabilities. Sensitive fields (passwords, auth keys, secrets) are never exposed in tool output.
@@ -151,10 +154,13 @@ The admin includes a **Prompt Library** with 25 curated prompts across six categ
 |----------|-------|----------------|
 | Content Management | 7 | "List all draft posts and suggest which ones to publish first." |
 | SEO Optimization | 6 | "Audit this site's SEO and list the top 5 issues to fix." |
-| Media Library | 3 | "Find all media files uploaded more than 6 months ago that are not used in any post." |
+| Media Library | 3 | "Find all media files not used in any post." |
 | Site Health | 5 | "Check the site health and flag any critical issues." |
 | Users | 3 | "Show all editors and their last activity." |
-| Power Prompts | 4 | "Do a full site audit: SEO, health, unused media and missing content — give me a prioritized action list." |
+| WooCommerce | 7 | "Show all out of stock products and pending orders." |
+| Comments | 6 | "Show all pending comments and approve the genuine ones." |
+| Custom Post Types | 5 | "List all custom post types and how many entries each has." |
+| Power Prompts | 6 | "Run a full site audit: SEO, health, WooCommerce, media and comments." |
 
 Access it via **TR AI Toolkit → Prompt Library** in the WordPress admin.
 
@@ -226,6 +232,48 @@ Admin email is masked in all health tool output.
 | `tr-ai-toolkit/search-users` | Search by display name or email | `list_users` |
 | `tr-ai-toolkit/get-user-roles` | All roles with capability summary | `manage_options` |
 
+### WooCommerce (12 tools)
+
+> Auto-enabled when WooCommerce is active. Silently skipped when WooCommerce is not installed.
+
+| Tool | Description | Capability |
+|------|-------------|------------|
+| `tr-ai-toolkit/wc-list-products` | Paginated product list with status/stock/category filters | `read` |
+| `tr-ai-toolkit/wc-get-product` | Full product details | `read` |
+| `tr-ai-toolkit/wc-search-products` | Search products by name or SKU | `read` |
+| `tr-ai-toolkit/wc-create-product` | Create a simple product (defaults to draft) | `edit_products` |
+| `tr-ai-toolkit/wc-update-product` | Update name, price, stock, SKU or status | `edit_products` |
+| `tr-ai-toolkit/wc-get-low-stock-products` | Out of stock / backorder products | `edit_products` |
+| `tr-ai-toolkit/wc-list-orders` | Paginated orders with status filter | `edit_shop_orders` |
+| `tr-ai-toolkit/wc-get-order` | Full order details with line items and billing | `edit_shop_orders` |
+| `tr-ai-toolkit/wc-update-order-status` | Change order status with optional note | `edit_shop_orders` |
+| `tr-ai-toolkit/wc-list-customers` | Customers with order count and total spent (email masked) | `list_users` |
+| `tr-ai-toolkit/wc-list-coupons` | Coupons with discount type, usage count and expiry | `edit_shop_orders` |
+| `tr-ai-toolkit/wc-get-sales-summary` | Revenue and order counts for today / week / month / year | `view_woocommerce_reports` |
+
+### Comments (6 tools)
+
+| Tool | Description | Capability |
+|------|-------------|------------|
+| `tr-ai-toolkit/get-comment-summary` | Counts by status: pending, approved, spam, trash | `moderate_comments` |
+| `tr-ai-toolkit/list-comments` | Paginated list filtered by status and optionally post ID | `moderate_comments` |
+| `tr-ai-toolkit/get-comment` | Full comment details | `moderate_comments` |
+| `tr-ai-toolkit/approve-comment` | Approve a pending comment | `moderate_comments` |
+| `tr-ai-toolkit/trash-comment` | Move comment to trash (no permanent deletion) | `moderate_comments` |
+| `tr-ai-toolkit/reply-to-comment` | Post a reply as the authenticated user | `moderate_comments` |
+
+### Custom Post Types (5 tools)
+
+Works with any public CPT registered on the site — portfolio, testimonials, events, team members and more.
+
+| Tool | Description | Capability |
+|------|-------------|------------|
+| `tr-ai-toolkit/list-post-types` | All public CPTs with labels, archive info and published count | `read` |
+| `tr-ai-toolkit/list-cpt-posts` | Paginated posts for any CPT by slug | `read` |
+| `tr-ai-toolkit/get-cpt-post` | Full post details including all custom fields | `read` |
+| `tr-ai-toolkit/create-cpt-post` | Create a CPT post with custom fields (defaults to draft) | `edit_posts` |
+| `tr-ai-toolkit/update-cpt-post` | Update title, content, status or custom fields | `edit_posts` |
+
 ---
 
 ## Security
@@ -253,15 +301,18 @@ WordPress 6.9+
 │   │   ├── Implements MCP protocol directly (Streamable HTTP)
 │   │   └── Session management via WP transients
 │   ├── Abilities Manager
-│   │   ├── Content Module    (14 tools)
-│   │   ├── Media Module      (5 tools)
-│   │   ├── SEO Module        (5 tools)
-│   │   ├── Health Module     (7 tools)
-│   │   └── Users Module      (4 tools)
+│   │   ├── Content Module      (14 tools)
+│   │   ├── Media Module        (5 tools)
+│   │   ├── SEO Module          (5 tools)
+│   │   ├── Health Module       (7 tools)
+│   │   ├── Users Module        (4 tools)
+│   │   ├── WooCommerce Module  (12 tools — auto-detects WC)
+│   │   ├── Comments Module     (6 tools)
+│   │   └── CPT Module          (5 tools)
 │   └── Admin UI
 │       ├── Dashboard, Settings, Activity Log
 │       ├── Connection Guide + Quick Connect
-│       └── Prompt Library (25 prompts)
+│       └── Prompt Library (42 prompts)
 └── MCP Adapter (auto-installed — required for STDIO transport)
 ```
 
