@@ -170,6 +170,120 @@ $prompt_categories = array(
 	),
 
 	array(
+		'icon'    => 'dashicons-cart',
+		'title'   => __( 'WooCommerce', 'tr-wordpress-ai-toolkit' ),
+		'color'   => '#7f54b3',
+		'prompts' => array(
+			array(
+				'title'       => __( 'Today\'s Orders Summary', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'See all orders placed today with their status and totals.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Show me all WooCommerce orders placed today. List the order ID, customer name, total amount, and current status for each one.',
+			),
+			array(
+				'title'       => __( 'Monthly Sales Report', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Get total revenue and order breakdown for this month.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Give me a WooCommerce sales summary for this month. Show total revenue, total number of completed orders, and how many orders are in each status (pending, processing, on-hold, etc.).',
+			),
+			array(
+				'title'       => __( 'Find Out of Stock Products', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Quickly identify products that need restocking.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Find all WooCommerce products that are currently out of stock or on backorder. Show me the product name, SKU, and current stock status so I can restock them.',
+			),
+			array(
+				'title'       => __( 'List Pending Orders', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'See orders waiting for payment or processing.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Show me all WooCommerce orders with status "pending" or "on-hold". List the order ID, customer name, total, and date so I can follow up on them.',
+			),
+			array(
+				'title'       => __( 'Create a New Product', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Add a new product to your WooCommerce store.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Create a new WooCommerce product called "[Product Name]" with a regular price of [price], SKU "[SKU]", and this description: "[description]". Save it as a draft so I can review before publishing.',
+			),
+			array(
+				'title'       => __( 'Top Customers Overview', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'See your most valuable customers by total spend.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'List my WooCommerce customers and show their total number of orders and total amount spent. Who are my top 10 customers by value?',
+			),
+			array(
+				'title'       => __( 'Coupon Audit', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Review all active coupons, usage and expiry dates.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Show me all WooCommerce coupons. For each one, list the code, discount type and amount, how many times it has been used vs the usage limit, and the expiry date. Flag any that are expired or close to their usage limit.',
+			),
+		),
+	),
+
+	array(
+		'icon'    => 'dashicons-format-chat',
+		'title'   => __( 'Comments', 'tr-wordpress-ai-toolkit' ),
+		'color'   => '#0ea5e9',
+		'prompts' => array(
+			array(
+				'title'       => __( 'Comment Moderation Report', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'See how many comments are waiting for review.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Give me a comment moderation summary for my WordPress site. How many comments are pending approval, approved, marked as spam, and in trash?',
+			),
+			array(
+				'title'       => __( 'Review Pending Comments', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'See all comments waiting for approval and decide what to do.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Show me all pending comments on my WordPress site waiting for approval. List the author name, the post they commented on, and the comment content. Tell me which ones look genuine and which look like spam.',
+			),
+			array(
+				'title'       => __( 'Approve Genuine Comments', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Quickly approve multiple legitimate pending comments.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Show me the first 10 pending comments on my WordPress site. For each one, tell me if it looks genuine or spammy based on the content. Then approve the ones that look real.',
+			),
+			array(
+				'title'       => __( 'Comments on a Specific Post', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'See all comments for one post including pending ones.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Show me all comments on my WordPress post with ID [post_id] — including pending, approved, and spam. List them in order with author name, date, and content.',
+			),
+			array(
+				'title'       => __( 'Reply to a Comment', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Post a reply to any comment directly from Claude.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Reply to comment ID [comment_id] on my WordPress site with this message: "[Your reply text here]". Post the reply as the site admin.',
+			),
+			array(
+				'title'       => __( 'Clean Up Spam', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Find and trash spam or low-quality comments.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Show me the last 20 pending comments on my WordPress site. Identify any that look like spam, promotional, or low-quality. List their comment IDs so I can decide which ones to trash.',
+			),
+		),
+	),
+
+	array(
+		'icon'    => 'dashicons-screenoptions',
+		'title'   => __( 'Custom Post Types', 'tr-wordpress-ai-toolkit' ),
+		'color'   => '#059669',
+		'prompts' => array(
+			array(
+				'title'       => __( 'Discover All Custom Post Types', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'See every CPT registered on this site — plugins, themes, or custom.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'List all custom post types registered on my WordPress site. For each one, show the slug, label, whether it has an archive, and how many published entries it has.',
+			),
+			array(
+				'title'       => __( 'Browse Portfolio Items', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'List your portfolio, project or case study CPT entries.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Show me all published entries in my "portfolio" custom post type. List their titles, dates, and URLs. If the post type is named differently on this site, first run list-post-types to find the right slug.',
+			),
+			array(
+				'title'       => __( 'List Testimonials', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'See all testimonial CPT entries on your site.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'List all entries in my "testimonial" custom post type. Show me the title, content, and any custom fields like client name, company, or rating. If the post type slug is different, check list-post-types first.',
+			),
+			array(
+				'title'       => __( 'Create a CPT Entry', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Add a new entry to any custom post type with custom fields.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Create a new entry in my "[post_type_slug]" custom post type with the title "[Title]" and content "[Content]". Set these custom fields: [field_name]: "[value]". Save as draft.',
+			),
+			array(
+				'title'       => __( 'CPT Full Audit', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Get an overview of all CPTs and their content counts.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Give me a complete audit of all custom post types on my WordPress site. For each one, show the slug, label, number of published entries, number of drafts, and when the most recent entry was created.',
+			),
+		),
+	),
+
+	array(
 		'icon'    => 'dashicons-lightbulb',
 		'title'   => __( 'Power Prompts — Advanced', 'tr-wordpress-ai-toolkit' ),
 		'color'   => '#1d2327',
@@ -180,14 +294,24 @@ $prompt_categories = array(
 				'prompt'      => 'Generate a complete monthly site report for my WordPress site. Include: (1) how many posts and pages are published vs draft, (2) top SEO issues to fix, (3) unused media files count, (4) plugin and WordPress version status, (5) number of users by role. Format it as an executive summary with action items.',
 			),
 			array(
+				'title'       => __( 'WooCommerce Store Health Check', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Full store audit — inventory, orders, coupons and customers.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Run a complete WooCommerce store health check. Check: (1) out of stock products, (2) pending and on-hold orders, (3) expired or heavily used coupons, (4) this month\'s revenue vs last month if possible, (5) any products with no price set. Give me a prioritized action list.',
+			),
+			array(
 				'title'       => __( 'New Client Site Onboarding', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Perfect for agencies — quickly understand a new WordPress site.', 'tr-wordpress-ai-toolkit' ),
-				'prompt'      => 'I just got access to this WordPress site. Give me a complete onboarding overview: WordPress version, PHP version, active theme, all active plugins, total posts and pages, user roles, permalink structure, and any immediate issues I should know about.',
+				'prompt'      => 'I just got access to this WordPress site. Give me a complete onboarding overview: WordPress version, PHP version, active theme, all active plugins, total posts and pages, user roles, permalink structure, any custom post types, and any immediate issues I should know about.',
 			),
 			array(
 				'title'       => __( 'Content Gap Analysis', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Find what topics are missing from your blog.', 'tr-wordpress-ai-toolkit' ),
 				'prompt'      => 'Show me all my published blog post categories and the number of posts in each. Then list the 5 most recent posts from my top 3 categories. Based on this, suggest 10 new post ideas that would fill content gaps and improve topical authority.',
+			),
+			array(
+				'title'       => __( 'Full Site Audit', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'The ultimate audit — SEO, health, media, comments, WooCommerce and users in one go.', 'tr-wordpress-ai-toolkit' ),
+				'prompt'      => 'Run a complete audit of my WordPress site and give me a prioritized action list. Check: (1) SEO — missing titles, descriptions, featured images, (2) Site health — WP/PHP versions, plugins, memory, (3) Media — unused files, (4) Comments — pending moderation count, (5) Users — admin accounts review, (6) WooCommerce — out of stock products and pending orders if WooCommerce is active. Format the output as sections with a priority level (High/Medium/Low) for each issue.',
 			),
 			array(
 				'title'       => __( 'Publish a Post Series', 'tr-wordpress-ai-toolkit' ),
@@ -207,7 +331,7 @@ $prompt_categories = array(
 	</h1>
 
 	<p style="font-size:14px;color:#3c434a;margin-bottom:24px;max-width:700px;">
-		<?php esc_html_e( 'Ready-to-use prompts for Claude.ai. Click "Copy Prompt", paste it into Claude with your Prolore connector active, and get instant results.', 'tr-wordpress-ai-toolkit' ); ?>
+		<?php esc_html_e( 'Ready-to-use prompts for Claude.ai. Click "Copy Prompt", paste it into Claude with your TR AI Toolkit connector active, and get instant results.', 'tr-wordpress-ai-toolkit' ); ?>
 	</p>
 
 	<!-- Filter bar -->
@@ -260,8 +384,8 @@ $prompt_categories = array(
 	<div class="tr-section" style="border-left:4px solid #2271b1;margin-top:8px;">
 		<h2 style="margin-top:0;"><?php esc_html_e( 'How to Use These Prompts', 'tr-wordpress-ai-toolkit' ); ?></h2>
 		<ol style="font-size:13px;line-height:2;">
-			<li><?php esc_html_e( 'Open Claude.ai and go to your WordPress project (where the Prolore connector is active).', 'tr-wordpress-ai-toolkit' ); ?></li>
-			<li><?php esc_html_e( 'Make sure the Prolore connector is enabled in that chat session.', 'tr-wordpress-ai-toolkit' ); ?></li>
+			<li><?php esc_html_e( 'Open Claude.ai and go to your WordPress project (where the TR AI Toolkit connector is active).', 'tr-wordpress-ai-toolkit' ); ?></li>
+			<li><?php esc_html_e( 'Make sure the TR AI Toolkit connector is enabled in that chat session.', 'tr-wordpress-ai-toolkit' ); ?></li>
 			<li><?php esc_html_e( 'Copy a prompt above, paste it into Claude, and replace any [bracketed placeholders] with your actual values.', 'tr-wordpress-ai-toolkit' ); ?></li>
 			<li><?php esc_html_e( 'Claude will use your site\'s live data to give you accurate, real-time answers.', 'tr-wordpress-ai-toolkit' ); ?></li>
 		</ol>
