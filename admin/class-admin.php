@@ -226,8 +226,44 @@ class TR_AI_Toolkit_Admin {
 	 * Shows a notice if the MCP Adapter plugin is not installed/active.
 	 */
 	public function show_mcp_adapter_notice(): void {
-		$screen = get_current_screen();
+		// Show auto-install success notice (any admin screen, one-time).
+		if ( get_option( 'tr_ai_toolkit_mcp_adapter_auto_installed' ) ) {
+			delete_option( 'tr_ai_toolkit_mcp_adapter_auto_installed' );
+			echo '<div class="notice notice-success is-dismissible"><p>';
+			echo '<strong>' . esc_html__( 'TR AI Toolkit:', 'tr-wordpress-ai-toolkit' ) . '</strong> ';
+			echo esc_html__( 'MCP Adapter plugin was automatically installed and activated. Your site is now ready to connect AI assistants.', 'tr-wordpress-ai-toolkit' );
+			echo '</p></div>';
+			return;
+		}
 
+		// Show auto-activate success notice.
+		if ( get_option( 'tr_ai_toolkit_mcp_adapter_auto_activated' ) ) {
+			delete_option( 'tr_ai_toolkit_mcp_adapter_auto_activated' );
+			echo '<div class="notice notice-success is-dismissible"><p>';
+			echo '<strong>' . esc_html__( 'TR AI Toolkit:', 'tr-wordpress-ai-toolkit' ) . '</strong> ';
+			echo esc_html__( 'MCP Adapter plugin was found and activated automatically.', 'tr-wordpress-ai-toolkit' );
+			echo '</p></div>';
+			return;
+		}
+
+		// Show install error notice.
+		$install_error = get_option( 'tr_ai_toolkit_mcp_adapter_install_error' );
+		if ( $install_error ) {
+			echo '<div class="notice notice-error is-dismissible"><p>';
+			echo '<strong>' . esc_html__( 'TR AI Toolkit:', 'tr-wordpress-ai-toolkit' ) . '</strong> ';
+			echo wp_kses_post(
+				sprintf(
+					/* translators: %1$s: error message, %2$s: manual install URL */
+					__( 'Could not auto-install MCP Adapter: %1$s. Please <a href="%2$s">install it manually</a>.', 'tr-wordpress-ai-toolkit' ),
+					esc_html( $install_error ),
+					esc_url( admin_url( 'plugin-install.php?s=mcp-adapter&tab=search&type=term' ) )
+				)
+			);
+			echo '</p></div>';
+			return;
+		}
+
+		$screen = get_current_screen();
 		if ( ! $screen || strpos( $screen->id, 'tr-ai-toolkit' ) === false ) {
 			return;
 		}
@@ -236,6 +272,7 @@ class TR_AI_Toolkit_Admin {
 			return;
 		}
 
+		// MCP Adapter missing — show install prompt.
 		echo '<div class="notice notice-warning is-dismissible"><p>';
 		echo wp_kses_post(
 			sprintf(
