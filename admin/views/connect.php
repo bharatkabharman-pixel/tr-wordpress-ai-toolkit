@@ -80,14 +80,38 @@ defined( 'ABSPATH' ) || exit;
 			<span class="dashicons dashicons-superhero" style="color:#2271b1;vertical-align:middle;margin-right:6px;"></span>
 			<?php esc_html_e( 'Quick Connect — One Click Setup', 'tr-wordpress-ai-toolkit' ); ?>
 		</h2>
+
+		<?php if ( $is_connected ) : ?>
+		<!-- Active connection status -->
+		<div class="tr-connection-status-bar">
+			<div class="tr-connection-active">
+				<span class="dashicons dashicons-yes-alt"></span>
+				<div>
+					<strong><?php esc_html_e( 'AI Access Active', 'tr-wordpress-ai-toolkit' ); ?></strong>
+					<span><?php printf( esc_html__( 'Connected as %s via Application Password.', 'tr-wordpress-ai-toolkit' ), '<strong>' . esc_html( $connected_username ) . '</strong>' ); ?></span>
+				</div>
+			</div>
+			<div class="tr-connection-actions">
+				<button id="tr-generate-config-btn" class="button button-secondary" type="button">
+					<?php esc_html_e( 'Regenerate Config', 'tr-wordpress-ai-toolkit' ); ?>
+				</button>
+				<button id="tr-revoke-btn" class="button tr-revoke-btn" type="button">
+					<span class="dashicons dashicons-no-alt" style="vertical-align:middle;margin-right:3px;font-size:14px;width:14px;height:14px;"></span>
+					<?php esc_html_e( 'Revoke Access', 'tr-wordpress-ai-toolkit' ); ?>
+				</button>
+			</div>
+		</div>
+		<div id="tr-revoke-error" class="notice notice-error inline" style="display:none;margin:10px 0 0;"></div>
+		<div id="tr-revoke-success" class="notice notice-success inline" style="display:none;margin:10px 0 0;"></div>
+		<?php else : ?>
 		<p style="font-size:14px;color:#3c434a;">
 			<?php esc_html_e( 'Click the button below. We will automatically create credentials and generate a ready-to-use configuration for Claude.ai, Claude Desktop, or any MCP client.', 'tr-wordpress-ai-toolkit' ); ?>
 		</p>
-
 		<button id="tr-generate-config-btn" class="button button-primary button-hero" type="button">
 			<span class="dashicons dashicons-superhero" style="vertical-align:middle;margin-right:4px;"></span>
 			<?php esc_html_e( 'Generate Connection Config', 'tr-wordpress-ai-toolkit' ); ?>
 		</button>
+		<?php endif; ?>
 
 		<div id="tr-generate-spinner" class="spinner" style="display:none;float:none;margin:12px 0 0 0;"></div>
 		<div id="tr-generate-error" class="notice notice-error inline" style="display:none;margin-top:12px;"></div>

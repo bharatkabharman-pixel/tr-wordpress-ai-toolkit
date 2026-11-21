@@ -32,6 +32,7 @@ class TR_AI_Toolkit_Admin {
 		add_action( 'admin_post_tr_ai_toolkit_save_settings', array( $this, 'handle_save_settings' ) );
 		add_action( 'admin_notices', array( $this, 'show_mcp_adapter_notice' ) );
 		add_action( 'wp_ajax_tr_ai_toolkit_generate_app_password', array( $this, 'ajax_generate_app_password' ) );
+		add_action( 'wp_ajax_tr_ai_toolkit_revoke_app_password', array( $this, 'ajax_revoke_app_password' ) );
 	}
 
 	/**
@@ -134,10 +135,14 @@ class TR_AI_Toolkit_Admin {
 				'nonce'    => wp_create_nonce( 'tr_ai_toolkit_admin' ),
 				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
 				'strings'  => array(
-					'copied'      => __( 'Copied!', 'tr-wordpress-ai-toolkit' ),
-					'copyFail'    => __( 'Copy failed. Please copy manually.', 'tr-wordpress-ai-toolkit' ),
-					'ajaxError'   => __( 'Request failed. Please try again.', 'tr-wordpress-ai-toolkit' ),
-					'regenerate'  => __( 'Regenerate (creates new credentials)', 'tr-wordpress-ai-toolkit' ),
+					'copied'         => __( 'Copied!', 'tr-wordpress-ai-toolkit' ),
+					'copyFail'       => __( 'Copy failed. Please copy manually.', 'tr-wordpress-ai-toolkit' ),
+					'ajaxError'      => __( 'Request failed. Please try again.', 'tr-wordpress-ai-toolkit' ),
+					'regenerate'     => __( 'Regenerate (creates new credentials)', 'tr-wordpress-ai-toolkit' ),
+					'revokeAccess'   => __( 'Revoke Access', 'tr-wordpress-ai-toolkit' ),
+					'revokeConfirm'  => __( 'Are you sure? This will disconnect all AI assistants using the Quick Connect credentials. Any manually added credentials will still work.', 'tr-wordpress-ai-toolkit' ),
+					'revoking'       => __( 'Revoking…', 'tr-wordpress-ai-toolkit' ),
+					'revokeReload'   => __( 'Reloading page…', 'tr-wordpress-ai-toolkit' ),
 				),
 			)
 		);
@@ -171,12 +176,27 @@ class TR_AI_Toolkit_Admin {
 
 	public function render_connect(): void {
 		$this->check_capability( 'manage_options' );
+		$user_id      = get_current_user_id();
+		$saved_uuid   = get_user_meta( $user_id, 'tr_ai_toolkit_app_password_uuid', true );
+		$is_connected = false;
+
+		if ( $saved_uuid && class_exists( 'WP_Application_Passwords' ) ) {
+			$stored = WP_Application_Passwords::get_user_application_password( $user_id, $saved_uuid );
+			$is_connected = ! empty( $stored );
+			if ( ! $is_connected ) {
+				delete_user_meta( $user_id, 'tr_ai_toolkit_app_password_uuid' );
+				delete_user_meta( $user_id, 'tr_ai_toolkit_app_password_name' );
+			}
+		}
+
 		$data = array(
-			'mcp_endpoint'    => rest_url( 'tr-ai-toolkit/mcp' ),
-			'default_endpoint' => rest_url( 'mcp/mcp' ),
-			'stdio_command'   => TR_AI_Toolkit_MCP_Server::get_stdio_command(),
-			'mcp_adapter_active' => $this->is_mcp_adapter_active(),
+			'mcp_endpoint'         => rest_url( 'tr-ai-toolkit/mcp' ),
+			'default_endpoint'     => rest_url( 'mcp/mcp' ),
+			'stdio_command'        => TR_AI_Toolkit_MCP_Server::get_stdio_command(),
+			'mcp_adapter_active'   => $this->is_mcp_adapter_active(),
 			'abilities_api_active' => function_exists( 'wp_register_ability' ),
+			'is_connected'         => $is_connected,
+			'connected_username'   => $is_connected ? get_userdata( $user_id )->user_login : '',
 		);
 		$this->render_view( 'connect', $data );
 	}
@@ -238,6 +258,9 @@ class TR_AI_Toolkit_Admin {
 
 		list( $plain_password, $item ) = $result;
 
+		update_user_meta( $user_id, 'tr_ai_toolkit_app_password_uuid', $item['uuid'] );
+		update_user_meta( $user_id, 'tr_ai_toolkit_app_password_name', $item['name'] );
+
 		$username   = $user->user_login;
 		$mcp_url    = rest_url( 'tr-ai-toolkit/mcp' );
 		$auth_value = 'Basic ' . base64_encode( $username . ':' . $plain_password );
@@ -267,6 +290,41 @@ class TR_AI_Toolkit_Admin {
 				'claude_desktop_config' => $claude_desktop_config,
 			)
 		);
+	}
+
+	/**
+	 * Revokes the Application Password created by Quick Connect.
+	 */
+	public function ajax_revoke_app_password(): void {
+		if ( ! check_ajax_referer( 'tr_ai_toolkit_admin', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'tr-wordpress-ai-toolkit' ) ) );
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'tr-wordpress-ai-toolkit' ) ) );
+			return;
+		}
+
+		$user_id    = get_current_user_id();
+		$saved_uuid = get_user_meta( $user_id, 'tr_ai_toolkit_app_password_uuid', true );
+
+		if ( ! $saved_uuid ) {
+			wp_send_json_error( array( 'message' => __( 'No Quick Connect password found to revoke.', 'tr-wordpress-ai-toolkit' ) ) );
+			return;
+		}
+
+		$result = WP_Application_Passwords::delete_application_password( $user_id, $saved_uuid );
+
+		delete_user_meta( $user_id, 'tr_ai_toolkit_app_password_uuid' );
+		delete_user_meta( $user_id, 'tr_ai_toolkit_app_password_name' );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			return;
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Access revoked. The AI assistant can no longer connect to this site.', 'tr-wordpress-ai-toolkit' ) ) );
 	}
 
 	// -------------------------------------------------------------------------

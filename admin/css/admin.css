@@ -573,6 +573,70 @@ code.tr-copyable {
 }
 
 /* -------------------------------------------------------------------------
+   Connection Status Bar
+-------------------------------------------------------------------------- */
+
+.tr-connection-status-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 12px;
+	background: #d7f7e1;
+	border: 1px solid #a3d9b1;
+	border-radius: 6px;
+	padding: 14px 18px;
+	margin-bottom: 20px;
+}
+
+.tr-connection-active {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	color: #1a7a2e;
+}
+
+.tr-connection-active .dashicons {
+	font-size: 24px;
+	width: 24px;
+	height: 24px;
+	flex-shrink: 0;
+}
+
+.tr-connection-active div {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	font-size: 13px;
+}
+
+.tr-connection-active strong {
+	font-size: 14px;
+}
+
+.tr-connection-actions {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.tr-revoke-btn {
+	border-color: #d63638 !important;
+	color: #d63638 !important;
+	background: #fff !important;
+}
+
+.tr-revoke-btn:hover {
+	background: #d63638 !important;
+	color: #fff !important;
+}
+
+.tr-revoke-btn:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+/* -------------------------------------------------------------------------
    Responsive
 -------------------------------------------------------------------------- */
 

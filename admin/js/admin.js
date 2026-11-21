@@ -257,6 +257,64 @@
 	});
 
 	// -------------------------------------------------------------------------
+	// Revoke Access
+	// -------------------------------------------------------------------------
+	document.addEventListener('DOMContentLoaded', function () {
+		var revokeBtn = document.getElementById('tr-revoke-btn');
+		if (!revokeBtn) return;
+
+		revokeBtn.addEventListener('click', function () {
+			if (!confirm(trAIToolkit.strings.revokeConfirm)) return;
+
+			var errorBox   = document.getElementById('tr-revoke-error');
+			var successBox = document.getElementById('tr-revoke-success');
+
+			revokeBtn.disabled = true;
+			revokeBtn.textContent = trAIToolkit.strings.revoking;
+			if (errorBox)   errorBox.style.display   = 'none';
+			if (successBox) successBox.style.display = 'none';
+
+			var data = new FormData();
+			data.append('action', 'tr_ai_toolkit_revoke_app_password');
+			data.append('nonce',  trAIToolkit.nonce);
+
+			fetch(trAIToolkit.ajaxUrl, { method: 'POST', body: data })
+				.then(function (res) { return res.json(); })
+				.then(function (response) {
+					if (!response.success) {
+						revokeBtn.disabled = false;
+						revokeBtn.innerHTML = '<span class="dashicons dashicons-no-alt" style="vertical-align:middle;margin-right:3px;font-size:14px;width:14px;height:14px;"></span>' + trAIToolkit.strings.revokeAccess;
+						if (errorBox) {
+							errorBox.innerHTML = '<p>' + escapeHtml(response.data ? response.data.message : trAIToolkit.strings.ajaxError) + '</p>';
+							errorBox.style.display = 'block';
+						}
+						return;
+					}
+
+					// Hide the whole status bar and show success message.
+					var statusBar = document.querySelector('.tr-connection-status-bar');
+					if (statusBar) statusBar.style.display = 'none';
+
+					if (successBox) {
+						successBox.innerHTML = '<p><strong>' + escapeHtml(response.data.message) + '</strong> ' + escapeHtml(trAIToolkit.strings.revokeReload) + '</p>';
+						successBox.style.display = 'block';
+					}
+
+					// Reload after 2 seconds to reflect the new disconnected state.
+					setTimeout(function () { window.location.reload(); }, 2500);
+				})
+				.catch(function () {
+					revokeBtn.disabled = false;
+					revokeBtn.innerHTML = '<span class="dashicons dashicons-no-alt" style="vertical-align:middle;margin-right:3px;font-size:14px;width:14px;height:14px;"></span>' + trAIToolkit.strings.revokeAccess;
+					if (errorBox) {
+						errorBox.innerHTML = '<p>' + escapeHtml(trAIToolkit.strings.ajaxError) + '</p>';
+						errorBox.style.display = 'block';
+					}
+				});
+		});
+	});
+
+	// -------------------------------------------------------------------------
 	// Auto-dismiss admin notices after 5 seconds
 	// -------------------------------------------------------------------------
 	document.addEventListener('DOMContentLoaded', function () {
