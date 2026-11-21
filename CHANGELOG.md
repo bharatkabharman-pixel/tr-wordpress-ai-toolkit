@@ -11,6 +11,15 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.1] — 2026-11-21
+
+### Fixed
+- **WooCommerce, Comments, CPT modules showing DISABLED** — Settings save handler was filtering new modules out; abilities manager and dashboard were not auto-enabling them on upgrade from v1.1.0
+- **Settings page missing new module checkboxes** — WooCommerce, Comments and Custom Post Types were not showing in the Exposed Modules settings list
+- **Upgrade path from v1.1.0** — Existing installs now automatically enable the 3 new modules without requiring manual Settings save
+
+---
+
 ## [1.2.0] — 2026-11-21
 
 ### Added

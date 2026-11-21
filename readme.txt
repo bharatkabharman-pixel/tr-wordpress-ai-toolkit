@@ -4,7 +4,7 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,11 @@ A curated set of 25 ready-to-use prompts you can copy and paste directly into Cl
 5. Activity Log showing recent AI tool invocations.
 
 == Changelog ==
+
+= 1.2.1 — 2026-11-21 =
+* Fixed: WooCommerce, Comments and CPT modules showing as DISABLED after upgrading from v1.1.0.
+* Fixed: Settings page was missing checkboxes for the 3 new modules.
+* Fixed: Settings save handler was filtering out new module slugs.
 
 = 1.2.0 — 2026-11-21 =
 * Added: WooCommerce module with 12 tools — products, orders, customers, coupons and sales summary. Auto-detects WooCommerce.
