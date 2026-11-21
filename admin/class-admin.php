@@ -188,34 +188,41 @@ class TR_AI_Toolkit_Admin {
 	 * the ready-to-use Claude.ai connector configuration.
 	 */
 	public function ajax_generate_app_password(): void {
-		check_ajax_referer( 'tr_ai_toolkit_admin', 'nonce' );
+		if ( ! check_ajax_referer( 'tr_ai_toolkit_admin', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed. Please refresh the page and try again.', 'tr-wordpress-ai-toolkit' ) ) );
+			return;
+		}
 
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'tr-wordpress-ai-toolkit' ) ) );
-		}
-
-		if ( ! class_exists( 'WP_Application_Passwords' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Application Passwords are not available on this site. Requires WordPress 5.6+.', 'tr-wordpress-ai-toolkit' ) ) );
+			return;
 		}
 
 		$user_id = get_current_user_id();
+		$user    = get_userdata( $user_id );
 
-		if ( ! WP_Application_Passwords::is_application_passwords_available_for_user( $user_id ) ) {
-			wp_send_json_error( array( 'message' => __( 'Application Passwords are disabled for your account. Check your site settings.', 'tr-wordpress-ai-toolkit' ) ) );
+		if ( ! $user ) {
+			wp_send_json_error( array( 'message' => __( 'Could not load user data.', 'tr-wordpress-ai-toolkit' ) ) );
+			return;
+		}
+
+		if ( ! class_exists( 'WP_Application_Passwords' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Application Passwords require WordPress 5.6 or higher.', 'tr-wordpress-ai-toolkit' ) ) );
+			return;
 		}
 
 		$result = WP_Application_Passwords::create_new_application_password(
 			$user_id,
-			array( 'name' => 'Claude AI — TR AI Toolkit' )
+			array( 'name' => 'Claude AI - TR AI Toolkit' )
 		);
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			return;
 		}
 
 		list( $plain_password, $item ) = $result;
 
-		$user       = get_userdata( $user_id );
 		$username   = $user->user_login;
 		$mcp_url    = rest_url( 'tr-ai-toolkit/mcp' );
 		$auth_value = 'Basic ' . base64_encode( $username . ':' . $plain_password );
