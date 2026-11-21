@@ -1,34 +1,144 @@
 /* TR WordPress AI Toolkit — Admin JS */
-/* global trAIToolkit */
+/* global trAIToolkit, jQuery */
 
 (function () {
 	'use strict';
 
-	/**
-	 * Copy-to-clipboard for endpoints and WP-CLI commands.
-	 */
+	// -------------------------------------------------------------------------
+	// Copy-to-clipboard
+	// -------------------------------------------------------------------------
 	document.addEventListener('DOMContentLoaded', function () {
 		document.querySelectorAll('.tr-copy-btn').forEach(function (btn) {
 			btn.addEventListener('click', function () {
 				var targetId = btn.getAttribute('data-target');
 				var target   = document.getElementById(targetId);
-
 				if (!target) return;
-
 				var text = target.textContent || target.innerText;
-
-				if (navigator.clipboard && window.isSecureContext) {
-					navigator.clipboard.writeText(text).then(function () {
-						flashBtn(btn, trAIToolkit.strings.copied);
-					}).catch(function () {
-						fallbackCopy(text, btn);
-					});
-				} else {
-					fallbackCopy(text, btn);
-				}
+				copyText(text, btn);
 			});
 		});
 	});
+
+	// -------------------------------------------------------------------------
+	// Quick Connect — generate credentials via AJAX
+	// -------------------------------------------------------------------------
+	document.addEventListener('DOMContentLoaded', function () {
+		var generateBtn   = document.getElementById('tr-generate-config-btn');
+		var regenerateBtn = document.getElementById('tr-regenerate-btn');
+
+		if (generateBtn) {
+			generateBtn.addEventListener('click', function () {
+				doGenerateConfig();
+			});
+		}
+
+		if (regenerateBtn) {
+			regenerateBtn.addEventListener('click', function () {
+				doGenerateConfig();
+			});
+		}
+	});
+
+	function doGenerateConfig() {
+		var generateBtn = document.getElementById('tr-generate-config-btn');
+		var spinner     = document.getElementById('tr-generate-spinner');
+		var errorBox    = document.getElementById('tr-generate-error');
+		var resultArea  = document.getElementById('tr-connect-result');
+
+		if (!generateBtn) return;
+
+		// Show spinner, hide previous error.
+		generateBtn.disabled = true;
+		if (spinner)  spinner.style.display  = 'block';
+		if (errorBox) errorBox.style.display  = 'none';
+
+		var data = new FormData();
+		data.append('action', 'tr_ai_toolkit_generate_app_password');
+		data.append('nonce',  trAIToolkit.nonce);
+
+		fetch(trAIToolkit.ajaxUrl, {
+			method: 'POST',
+			body:   data,
+		})
+		.then(function (res) { return res.json(); })
+		.then(function (response) {
+			generateBtn.disabled = false;
+			if (spinner) spinner.style.display = 'none';
+
+			if (!response.success) {
+				showError(errorBox, response.data ? response.data.message : trAIToolkit.strings.ajaxError);
+				return;
+			}
+
+			populateResult(response.data);
+
+			if (resultArea) {
+				resultArea.style.display = 'block';
+				resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+
+			// Update generate button text.
+			generateBtn.textContent = trAIToolkit.strings.regenerate;
+		})
+		.catch(function () {
+			generateBtn.disabled = false;
+			if (spinner) spinner.style.display = 'none';
+			showError(errorBox, trAIToolkit.strings.ajaxError);
+		});
+	}
+
+	function populateResult(data) {
+		setElText('tr-result-url',          data.mcp_url);
+		setElText('tr-result-header-name',  data.auth_header_name);
+		setElText('tr-result-header-value', data.auth_header_value);
+		setElText('tr-result-json',         data.claude_desktop_config);
+		setElText('tr-result-username',     data.username);
+		setElText('tr-result-app-password', data.app_password);
+
+		// Re-attach copy listeners for newly populated fields.
+		document.querySelectorAll('#tr-connect-result .tr-copy-btn').forEach(function (btn) {
+			btn.onclick = function () {
+				var targetId = btn.getAttribute('data-target');
+				var target   = document.getElementById(targetId);
+				if (!target) return;
+				copyText(target.textContent || target.innerText, btn);
+			};
+		});
+	}
+
+	function setElText(id, text) {
+		var el = document.getElementById(id);
+		if (el) el.textContent = text;
+	}
+
+	function showError(box, message) {
+		if (!box) return;
+		box.innerHTML = '<p>' + escapeHtml(message) + '</p>';
+		box.style.display = 'block';
+	}
+
+	function escapeHtml(str) {
+		return String(str)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;');
+	}
+
+	// -------------------------------------------------------------------------
+	// Copy helpers
+	// -------------------------------------------------------------------------
+	function copyText(text, btn) {
+		if (navigator.clipboard && window.isSecureContext) {
+			navigator.clipboard.writeText(text).then(function () {
+				flashBtn(btn, trAIToolkit.strings.copied);
+			}).catch(function () {
+				fallbackCopy(text, btn);
+			});
+		} else {
+			fallbackCopy(text, btn);
+		}
+	}
 
 	function flashBtn(btn, message) {
 		var original = btn.textContent;
@@ -48,20 +158,18 @@
 		document.body.appendChild(ta);
 		ta.focus();
 		ta.select();
-
 		try {
 			document.execCommand('copy');
 			flashBtn(btn, trAIToolkit.strings.copied);
 		} catch (e) {
 			flashBtn(btn, trAIToolkit.strings.copyFail);
 		}
-
 		document.body.removeChild(ta);
 	}
 
-	/**
-	 * Auto-dismiss admin notices after 5 seconds.
-	 */
+	// -------------------------------------------------------------------------
+	// Auto-dismiss admin notices after 5 seconds
+	// -------------------------------------------------------------------------
 	document.addEventListener('DOMContentLoaded', function () {
 		var notices = document.querySelectorAll('.tr-ai-toolkit-wrap .notice.is-dismissible');
 		if (notices.length) {

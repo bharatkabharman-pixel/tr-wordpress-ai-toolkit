@@ -278,6 +278,142 @@ code.tr-copyable {
 }
 
 /* -------------------------------------------------------------------------
+   Quick Connect
+-------------------------------------------------------------------------- */
+
+.tr-quick-connect-section {
+	border-left: 4px solid #2271b1;
+}
+
+.tr-connect-success-banner {
+	background: #d7f7e1;
+	color: #1a7a2e;
+	border: 1px solid #a3d9b1;
+	border-radius: 4px;
+	padding: 12px 16px;
+	font-size: 14px;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 20px;
+}
+
+.tr-connect-success-banner .dashicons {
+	font-size: 20px;
+	width: 20px;
+	height: 20px;
+}
+
+.tr-connect-block {
+	background: #f9f9f9;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 18px 20px;
+	margin-bottom: 16px;
+}
+
+.tr-connect-block-title {
+	font-size: 14px;
+	font-weight: 700;
+	color: #1d2327;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 14px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.tr-connect-block-title .dashicons {
+	color: #2271b1;
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+}
+
+.tr-connect-steps {
+	margin: 0;
+	padding-left: 22px;
+}
+
+.tr-connect-steps li {
+	margin-bottom: 14px;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.tr-connect-steps li:last-child {
+	margin-bottom: 0;
+}
+
+.tr-field-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 6px;
+	flex-wrap: wrap;
+}
+
+.tr-copyable-block {
+	display: block;
+	word-break: break-all;
+	max-width: 560px;
+}
+
+.tr-header-fields {
+	display: flex;
+	gap: 16px;
+	margin-top: 10px;
+	flex-wrap: wrap;
+}
+
+.tr-header-field {
+	flex: 1;
+	min-width: 200px;
+}
+
+.tr-header-field label {
+	display: block;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #787878;
+	margin-bottom: 4px;
+}
+
+.tr-inline-badge {
+	display: inline-block;
+	background: #f0f0f1;
+	color: #1d2327;
+	font-weight: 600;
+	font-size: 12px;
+	padding: 2px 10px;
+	border-radius: 4px;
+	font-family: monospace;
+}
+
+.tr-inline-badge-green {
+	background: #d7f7e1;
+	color: #1a7a2e;
+}
+
+.tr-code-wrapper {
+	position: relative;
+}
+
+.tr-code-copy-btn {
+	position: absolute !important;
+	top: 10px;
+	right: 10px;
+}
+
+.tr-credentials-block {
+	border-left: 4px solid #d63638;
+}
+
+/* -------------------------------------------------------------------------
    Responsive
 -------------------------------------------------------------------------- */
 

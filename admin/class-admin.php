@@ -31,6 +31,7 @@ class TR_AI_Toolkit_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_post_tr_ai_toolkit_save_settings', array( $this, 'handle_save_settings' ) );
 		add_action( 'admin_notices', array( $this, 'show_mcp_adapter_notice' ) );
+		add_action( 'wp_ajax_tr_ai_toolkit_generate_app_password', array( $this, 'ajax_generate_app_password' ) );
 	}
 
 	/**
@@ -123,8 +124,10 @@ class TR_AI_Toolkit_Admin {
 				'nonce'    => wp_create_nonce( 'tr_ai_toolkit_admin' ),
 				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
 				'strings'  => array(
-					'copied'  => __( 'Copied!', 'tr-wordpress-ai-toolkit' ),
-					'copyFail' => __( 'Copy failed. Please copy manually.', 'tr-wordpress-ai-toolkit' ),
+					'copied'      => __( 'Copied!', 'tr-wordpress-ai-toolkit' ),
+					'copyFail'    => __( 'Copy failed. Please copy manually.', 'tr-wordpress-ai-toolkit' ),
+					'ajaxError'   => __( 'Request failed. Please try again.', 'tr-wordpress-ai-toolkit' ),
+					'regenerate'  => __( 'Regenerate (creates new credentials)', 'tr-wordpress-ai-toolkit' ),
 				),
 			)
 		);
@@ -174,6 +177,74 @@ class TR_AI_Toolkit_Admin {
 			'logs' => $this->logger->get_recent( 100 ),
 		);
 		$this->render_view( 'logs', $data );
+	}
+
+	// -------------------------------------------------------------------------
+	// AJAX handlers
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Creates a WordPress Application Password for the current user and returns
+	 * the ready-to-use Claude.ai connector configuration.
+	 */
+	public function ajax_generate_app_password(): void {
+		check_ajax_referer( 'tr_ai_toolkit_admin', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'tr-wordpress-ai-toolkit' ) ) );
+		}
+
+		if ( ! class_exists( 'WP_Application_Passwords' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Application Passwords are not available on this site. Requires WordPress 5.6+.', 'tr-wordpress-ai-toolkit' ) ) );
+		}
+
+		$user_id = get_current_user_id();
+
+		if ( ! WP_Application_Passwords::is_application_passwords_available_for_user( $user_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Application Passwords are disabled for your account. Check your site settings.', 'tr-wordpress-ai-toolkit' ) ) );
+		}
+
+		$result = WP_Application_Passwords::create_new_application_password(
+			$user_id,
+			array( 'name' => 'Claude AI — TR AI Toolkit' )
+		);
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+		}
+
+		list( $plain_password, $item ) = $result;
+
+		$user       = get_userdata( $user_id );
+		$username   = $user->user_login;
+		$mcp_url    = rest_url( 'tr-ai-toolkit/mcp' );
+		$auth_value = 'Basic ' . base64_encode( $username . ':' . $plain_password );
+
+		$claude_desktop_config = json_encode(
+			array(
+				'mcpServers' => array(
+					'tr-ai-toolkit' => array(
+						'type'    => 'http',
+						'url'     => $mcp_url,
+						'headers' => array(
+							'Authorization' => $auth_value,
+						),
+					),
+				),
+			),
+			JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+		);
+
+		wp_send_json_success(
+			array(
+				'username'              => $username,
+				'app_password'          => $plain_password,
+				'mcp_url'               => $mcp_url,
+				'auth_header_name'      => 'Authorization',
+				'auth_header_value'     => $auth_value,
+				'claude_desktop_config' => $claude_desktop_config,
+			)
+		);
 	}
 
 	// -------------------------------------------------------------------------
