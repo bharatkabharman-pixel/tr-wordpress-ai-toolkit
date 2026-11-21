@@ -11,6 +11,21 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.1.0] — 2026-11-21
+
+### Added
+- **Prompt Library** — 25 categorized ready-to-use AI prompts with copy button and category filter (Content, SEO, Media, Health, Users, Power Prompts)
+- **Quick Connect** — One-click Application Password generation with ready-to-paste Claude.ai config
+- **Manual Credentials Encoder** — Enter username + app password, get base64 Authorization header instantly
+- **Auto-install MCP Adapter** — Plugin now auto-installs and activates MCP Adapter on activation
+
+### Fixed
+- **MCP tools/list returning empty** — Rewrote MCP server to implement protocol directly via WordPress REST API, no longer depends on MCP Adapter `create_server()` internal API
+- **500 error in AJAX handler** — Removed `is_application_passwords_available_for_user()` call that caused PHP fatal on some WP versions
+- Removed `Requires Plugins: mcp-adapter` header that blocked plugin activation
+
+---
+
 ## [1.0.0] — 2026-11-21
 
 ### Added
