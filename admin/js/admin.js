@@ -168,6 +168,45 @@
 	}
 
 	// -------------------------------------------------------------------------
+	// Prompt Library — copy prompt + category filter
+	// -------------------------------------------------------------------------
+	document.addEventListener('DOMContentLoaded', function () {
+
+		// Copy prompt buttons
+		document.querySelectorAll('.tr-copy-prompt-btn').forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				var text     = btn.getAttribute('data-prompt');
+				var feedback = btn.parentElement.querySelector('.tr-copy-feedback');
+
+				copyText(text, btn);
+
+				if (feedback) {
+					feedback.style.display = 'inline-flex';
+					setTimeout(function () { feedback.style.display = 'none'; }, 2000);
+				}
+			});
+		});
+
+		// Category filter buttons
+		var filterBtns = document.querySelectorAll('.tr-filter-btn');
+		filterBtns.forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				filterBtns.forEach(function (b) { b.classList.remove('tr-filter-active'); });
+				btn.classList.add('tr-filter-active');
+
+				var filter = btn.getAttribute('data-filter');
+				document.querySelectorAll('.tr-prompt-category').forEach(function (cat) {
+					if (filter === 'all' || cat.getAttribute('data-category') === filter) {
+						cat.style.display = '';
+					} else {
+						cat.style.display = 'none';
+					}
+				});
+			});
+		});
+	});
+
+	// -------------------------------------------------------------------------
 	// Manual credentials encoder (pure JS — no server call needed)
 	// -------------------------------------------------------------------------
 	document.addEventListener('DOMContentLoaded', function () {

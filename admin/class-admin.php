@@ -77,6 +77,15 @@ class TR_AI_Toolkit_Admin {
 
 		add_submenu_page(
 			'tr-ai-toolkit',
+			__( 'Prompt Library', 'tr-wordpress-ai-toolkit' ),
+			__( '✦ Prompt Library', 'tr-wordpress-ai-toolkit' ),
+			'read',
+			'tr-ai-toolkit-prompts',
+			array( $this, 'render_prompts' )
+		);
+
+		add_submenu_page(
+			'tr-ai-toolkit',
 			__( 'Activity Log', 'tr-wordpress-ai-toolkit' ),
 			__( 'Activity Log', 'tr-wordpress-ai-toolkit' ),
 			'manage_options',
@@ -95,6 +104,7 @@ class TR_AI_Toolkit_Admin {
 			'toplevel_page_tr-ai-toolkit',
 			'tr-ai-toolkit_page_tr-ai-toolkit-settings',
 			'tr-ai-toolkit_page_tr-ai-toolkit-connect',
+			'tr-ai-toolkit_page_tr-ai-toolkit-prompts',
 			'tr-ai-toolkit_page_tr-ai-toolkit-logs',
 		);
 
@@ -169,6 +179,11 @@ class TR_AI_Toolkit_Admin {
 			'abilities_api_active' => function_exists( 'wp_register_ability' ),
 		);
 		$this->render_view( 'connect', $data );
+	}
+
+	public function render_prompts(): void {
+		$this->check_capability( 'read' );
+		$this->render_view( 'prompts', array() );
 	}
 
 	public function render_logs(): void {
