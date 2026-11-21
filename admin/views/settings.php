@@ -67,13 +67,26 @@ defined( 'ABSPATH' ) || exit;
 					<td>
 						<?php
 						$modules = array(
-							'content' => __( 'Content (posts, pages, categories, tags)', 'tr-wordpress-ai-toolkit' ),
-							'media'   => __( 'Media (library browsing and metadata)', 'tr-wordpress-ai-toolkit' ),
-							'seo'     => __( 'SEO Analysis (audits and content checks)', 'tr-wordpress-ai-toolkit' ),
-							'health'  => __( 'Website Health (system info, plugins, theme)', 'tr-wordpress-ai-toolkit' ),
-							'users'   => __( 'Users (listing and role inspection)', 'tr-wordpress-ai-toolkit' ),
+							'content'     => __( 'Content — posts, pages, categories, tags (14 tools)', 'tr-wordpress-ai-toolkit' ),
+							'media'       => __( 'Media — library browsing and metadata (5 tools)', 'tr-wordpress-ai-toolkit' ),
+							'seo'         => __( 'SEO Analysis — audits and content checks (5 tools)', 'tr-wordpress-ai-toolkit' ),
+							'health'      => __( 'Website Health — system info, plugins, theme (7 tools)', 'tr-wordpress-ai-toolkit' ),
+							'users'       => __( 'Users — listing and role inspection (4 tools)', 'tr-wordpress-ai-toolkit' ),
+							'woocommerce' => __( 'WooCommerce — products, orders, customers, coupons (12 tools — auto-skipped if WooCommerce inactive)', 'tr-wordpress-ai-toolkit' ),
+							'comments'    => __( 'Comments — moderation, approve, trash, reply (6 tools)', 'tr-wordpress-ai-toolkit' ),
+							'cpt'         => __( 'Custom Post Types — manage any registered CPT (5 tools)', 'tr-wordpress-ai-toolkit' ),
 						);
-						$exposed = (array) $settings->get( 'mcp.exposed_modules', array_keys( $modules ) );
+						$all_slugs = array_keys( $modules );
+						$saved     = $settings->get( 'mcp.exposed_modules', null );
+						if ( $saved === null ) {
+							$exposed = $all_slugs;
+						} else {
+							// Auto-add new modules for installs upgrading from v1.1.0.
+							$new_modules = array( 'woocommerce', 'comments', 'cpt' );
+							$exposed = ( empty( array_intersect( $new_modules, (array) $saved ) ) )
+								? array_unique( array_merge( (array) $saved, $new_modules ) )
+								: (array) $saved;
+						}
 						foreach ( $modules as $slug => $label ) :
 						?>
 						<label style="display:block;margin-bottom:6px;">

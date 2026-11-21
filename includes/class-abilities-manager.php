@@ -71,7 +71,19 @@ class TR_AI_Toolkit_Abilities_Manager {
 	 * Loads module files and triggers ability registration on each active module.
 	 */
 	public function register_abilities(): void {
-		$exposed = (array) $this->settings->get( 'mcp.exposed_modules', array( 'content', 'media', 'seo', 'health', 'users', 'woocommerce', 'comments', 'cpt' ) );
+		$saved = $this->settings->get( 'mcp.exposed_modules', null );
+
+		if ( $saved === null ) {
+			// Fresh install — enable all modules.
+			$exposed = array_keys( $module_map );
+		} else {
+			// Existing install — auto-enable new modules added after v1.1.0
+			// if the user hasn't explicitly configured them yet.
+			$new_modules = array( 'woocommerce', 'comments', 'cpt' );
+			$exposed = ( empty( array_intersect( $new_modules, (array) $saved ) ) )
+				? array_unique( array_merge( (array) $saved, $new_modules ) )
+				: (array) $saved;
+		}
 
 		$module_map = array(
 			'content'     => array(

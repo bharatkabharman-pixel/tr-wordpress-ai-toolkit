@@ -355,7 +355,7 @@ class TR_AI_Toolkit_Admin {
 			'server_name'     => sanitize_text_field( $_POST['server_name'] ?? '' ),
 			'exposed_modules' => array_intersect(
 				(array) ( $_POST['exposed_modules'] ?? array() ),
-				array( 'content', 'media', 'seo', 'health', 'users' )
+				array( 'content', 'media', 'seo', 'health', 'users', 'woocommerce', 'comments', 'cpt' )
 			),
 		);
 

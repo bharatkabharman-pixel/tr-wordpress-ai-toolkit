@@ -15,8 +15,16 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$plugin_enabled = $settings->get( 'general.plugin_enabled', true );
-$exposed_modules = (array) $settings->get( 'mcp.exposed_modules', array() );
+$plugin_enabled  = $settings->get( 'general.plugin_enabled', true );
+$saved_modules   = $settings->get( 'mcp.exposed_modules', null );
+$new_modules     = array( 'woocommerce', 'comments', 'cpt' );
+if ( $saved_modules === null ) {
+	$exposed_modules = array( 'content', 'media', 'seo', 'health', 'users', 'woocommerce', 'comments', 'cpt' );
+} elseif ( empty( array_intersect( $new_modules, (array) $saved_modules ) ) ) {
+	$exposed_modules = array_unique( array_merge( (array) $saved_modules, $new_modules ) );
+} else {
+	$exposed_modules = (array) $saved_modules;
+}
 
 $status_class   = ( $mcp_adapter_active && $abilities_api_active && $plugin_enabled ) ? 'tr-status-ok' : 'tr-status-warn';
 $status_label   = ( $mcp_adapter_active && $abilities_api_active && $plugin_enabled )
