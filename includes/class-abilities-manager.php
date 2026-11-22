@@ -71,20 +71,6 @@ class TR_AI_Toolkit_Abilities_Manager {
 	 * Loads module files and triggers ability registration on each active module.
 	 */
 	public function register_abilities(): void {
-		$saved = $this->settings->get( 'mcp.exposed_modules', null );
-
-		if ( $saved === null ) {
-			// Fresh install — enable all modules.
-			$exposed = array_keys( $module_map );
-		} else {
-			// Existing install — auto-enable new modules added after v1.1.0
-			// if the user hasn't explicitly configured them yet.
-			$new_modules = array( 'woocommerce', 'comments', 'cpt' );
-			$exposed = ( empty( array_intersect( $new_modules, (array) $saved ) ) )
-				? array_unique( array_merge( (array) $saved, $new_modules ) )
-				: (array) $saved;
-		}
-
 		$module_map = array(
 			'content'     => array(
 				'file'  => TR_AI_TOOLKIT_PATH . 'modules/content/class-content-module.php',
@@ -119,6 +105,16 @@ class TR_AI_Toolkit_Abilities_Manager {
 				'class' => 'TR_AI_Toolkit_CPT_Module',
 			),
 		);
+
+		$saved       = $this->settings->get( 'mcp.exposed_modules', array() );
+		$new_modules = array( 'woocommerce', 'comments', 'cpt' );
+		$exposed     = ( empty( array_intersect( $new_modules, (array) $saved ) ) )
+			? array_unique( array_merge( (array) $saved, $new_modules ) )
+			: (array) $saved;
+
+		if ( empty( $exposed ) ) {
+			$exposed = array_keys( $module_map );
+		}
 
 		foreach ( $module_map as $slug => $spec ) {
 			if ( ! in_array( $slug, $exposed, true ) ) {

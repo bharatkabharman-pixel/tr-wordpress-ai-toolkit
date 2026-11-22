@@ -11,6 +11,14 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.2] — 2026-11-21
+
+### Fixed
+- **Tools not callable from Claude.ai** — MCP tool names for all original modules (Content, Media, SEO, Health, Users) used a forward-slash separator (`tr-ai-toolkit/list-posts`). The MCP specification requires tool names to use only alphanumeric characters, hyphens and underscores — no slashes. Claude.ai accepted these names in `tools/list` but refused to call them, reporting the tools as unavailable. All 35 tool names have been renamed to use a hyphen separator (`tr-ai-toolkit-list-posts`). WooCommerce, Comments and CPT modules were already using valid names and are unaffected.
+- **PHP bug in `register_abilities()`** — `array_keys($module_map)` was referenced before `$module_map` was defined. Reordered code so `$module_map` is always defined first.
+
+---
+
 ## [1.2.1] — 2026-11-21
 
 ### Fixed

@@ -33,7 +33,7 @@ class TR_AI_Toolkit_Media_Module {
 
 	private function register_list_media(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/list-media',
+			'tr-ai-toolkit-list-media',
 			array(
 				'label'       => __( 'List Media', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns a paginated list of media library items. Supports filtering by MIME type. Returns ID, title, URL, type, file size, dimensions and upload date.', 'tr-wordpress-ai-toolkit' ),
@@ -88,7 +88,7 @@ class TR_AI_Toolkit_Media_Module {
 			$items[] = $this->format_attachment( $attachment );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/list-media', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-list-media', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
 			'items'       => $items,
@@ -101,7 +101,7 @@ class TR_AI_Toolkit_Media_Module {
 
 	private function register_get_media_details(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-media-details',
+			'tr-ai-toolkit-get-media-details',
 			array(
 				'label'       => __( 'Get Media Details', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns full details for a single media attachment by ID, including all available image sizes, alt text, caption and file metadata.', 'tr-wordpress-ai-toolkit' ),
@@ -146,7 +146,7 @@ class TR_AI_Toolkit_Media_Module {
 			}
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/get-media-details', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-media-details', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array_merge(
 			$this->format_attachment( $attachment ),
@@ -162,7 +162,7 @@ class TR_AI_Toolkit_Media_Module {
 
 	private function register_search_media(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/search-media',
+			'tr-ai-toolkit-search-media',
 			array(
 				'label'       => __( 'Search Media', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Searches the media library by title, filename or alt text. Returns matching items with URLs.', 'tr-wordpress-ai-toolkit' ),
@@ -210,14 +210,14 @@ class TR_AI_Toolkit_Media_Module {
 			$items[] = $this->format_attachment( $attachment );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/search-media', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-search-media', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array( 'items' => $items, 'total' => (int) $wp_query->found_posts );
 	}
 
 	private function register_update_media_metadata(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/update-media-metadata',
+			'tr-ai-toolkit-update-media-metadata',
 			array(
 				'label'       => __( 'Update Media Metadata', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Updates the title, alt text, caption or description for a media attachment. Returns updated attachment summary.', 'tr-wordpress-ai-toolkit' ),
@@ -251,7 +251,7 @@ class TR_AI_Toolkit_Media_Module {
 		}
 
 		if ( ! current_user_can( 'edit_post', $id ) ) {
-			$this->logger->log( 'tr-ai-toolkit/update-media-metadata', $input, TR_AI_Toolkit_Logger::STATUS_DENIED );
+			$this->logger->log( 'tr-ai-toolkit-update-media-metadata', $input, TR_AI_Toolkit_Logger::STATUS_DENIED );
 			return new \WP_Error( 'forbidden', __( 'You cannot edit this attachment.', 'tr-wordpress-ai-toolkit' ), array( 'status' => 403 ) );
 		}
 
@@ -275,14 +275,14 @@ class TR_AI_Toolkit_Media_Module {
 			update_post_meta( $id, '_wp_attachment_image_alt', sanitize_text_field( $input['alt_text'] ) );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/update-media-metadata', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-update-media-metadata', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return $this->format_attachment( get_post( $id ) );
 	}
 
 	private function register_find_unused_media(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/find-unused-media',
+			'tr-ai-toolkit-find-unused-media',
 			array(
 				'label'       => __( 'Find Unused Media', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns media attachments that are not set as a featured image and have no parent post. Useful for cleaning up orphaned uploads. Returns IDs and URLs only — does not delete anything.', 'tr-wordpress-ai-toolkit' ),
@@ -336,7 +336,7 @@ class TR_AI_Toolkit_Media_Module {
 			);
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/find-unused-media', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-find-unused-media', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
 			'items' => $items,
@@ -347,30 +347,30 @@ class TR_AI_Toolkit_Media_Module {
 
 	public function handles( string $name ): bool {
 		return in_array( $name, array(
-			'tr-ai-toolkit/list-media', 'tr-ai-toolkit/get-media-details',
-			'tr-ai-toolkit/search-media', 'tr-ai-toolkit/update-media-metadata',
-			'tr-ai-toolkit/find-unused-media',
+			'tr-ai-toolkit-list-media', 'tr-ai-toolkit-get-media-details',
+			'tr-ai-toolkit-search-media', 'tr-ai-toolkit-update-media-metadata',
+			'tr-ai-toolkit-find-unused-media',
 		), true );
 	}
 
 	public function execute( string $name, array $args ): mixed {
 		return match ( $name ) {
-			'tr-ai-toolkit/list-media'            => $this->execute_list_media( $args ),
-			'tr-ai-toolkit/get-media-details'     => $this->execute_get_media_details( $args ),
-			'tr-ai-toolkit/search-media'          => $this->execute_search_media( $args ),
-			'tr-ai-toolkit/update-media-metadata' => $this->execute_update_media_metadata( $args ),
-			'tr-ai-toolkit/find-unused-media'     => $this->execute_find_unused_media( $args ),
+			'tr-ai-toolkit-list-media'            => $this->execute_list_media( $args ),
+			'tr-ai-toolkit-get-media-details'     => $this->execute_get_media_details( $args ),
+			'tr-ai-toolkit-search-media'          => $this->execute_search_media( $args ),
+			'tr-ai-toolkit-update-media-metadata' => $this->execute_update_media_metadata( $args ),
+			'tr-ai-toolkit-find-unused-media'     => $this->execute_find_unused_media( $args ),
 			default                               => new \WP_Error( 'not_found', "Unknown tool: {$name}" ),
 		};
 	}
 
 	public function get_mcp_tools(): array {
 		return array(
-			array( 'name' => 'tr-ai-toolkit/list-media', 'description' => 'Browse the media library. Returns ID, filename, URL, type, size and alt text.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ), 'mime_type' => array( 'type' => 'string', 'description' => 'e.g. image/jpeg, image/png, video/mp4' ) ) ) ),
-			array( 'name' => 'tr-ai-toolkit/get-media-details', 'description' => 'Returns full details of a single media attachment including all metadata.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'attachment_id' ), 'properties' => array( 'attachment_id' => array( 'type' => 'integer' ) ) ) ),
-			array( 'name' => 'tr-ai-toolkit/search-media', 'description' => 'Search the media library by filename or title.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'query' ), 'properties' => array( 'query' => array( 'type' => 'string' ), 'per_page' => array( 'type' => 'integer' ), 'mime_type' => array( 'type' => 'string' ) ) ) ),
-			array( 'name' => 'tr-ai-toolkit/update-media-metadata', 'description' => 'Update title, alt text or caption of a media attachment.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'attachment_id' ), 'properties' => array( 'attachment_id' => array( 'type' => 'integer' ), 'title' => array( 'type' => 'string' ), 'alt_text' => array( 'type' => 'string' ), 'caption' => array( 'type' => 'string' ), 'description' => array( 'type' => 'string' ) ) ) ),
-			array( 'name' => 'tr-ai-toolkit/find-unused-media', 'description' => 'Find media files not attached to any post or used as featured image.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer', 'description' => 'Max results (1-100). Default 20.' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit-list-media', 'description' => 'Browse the media library. Returns ID, filename, URL, type, size and alt text.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ), 'mime_type' => array( 'type' => 'string', 'description' => 'e.g. image/jpeg, image/png, video/mp4' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit-get-media-details', 'description' => 'Returns full details of a single media attachment including all metadata.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'attachment_id' ), 'properties' => array( 'attachment_id' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit-search-media', 'description' => 'Search the media library by filename or title.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'query' ), 'properties' => array( 'query' => array( 'type' => 'string' ), 'per_page' => array( 'type' => 'integer' ), 'mime_type' => array( 'type' => 'string' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit-update-media-metadata', 'description' => 'Update title, alt text or caption of a media attachment.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'attachment_id' ), 'properties' => array( 'attachment_id' => array( 'type' => 'integer' ), 'title' => array( 'type' => 'string' ), 'alt_text' => array( 'type' => 'string' ), 'caption' => array( 'type' => 'string' ), 'description' => array( 'type' => 'string' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit-find-unused-media', 'description' => 'Find media files not attached to any post or used as featured image.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer', 'description' => 'Max results (1-100). Default 20.' ) ) ) ),
 		);
 	}
 

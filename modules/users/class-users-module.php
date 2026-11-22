@@ -42,7 +42,7 @@ class TR_AI_Toolkit_Users_Module {
 
 	private function register_list_users(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/list-users',
+			'tr-ai-toolkit-list-users',
 			array(
 				'label'       => __( 'List Users', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns a paginated list of registered users. Each entry includes ID, display name, email (masked), role, registration date and post count. No password hashes or session data is included.', 'tr-wordpress-ai-toolkit' ),
@@ -92,7 +92,7 @@ class TR_AI_Toolkit_Users_Module {
 			$users[] = $this->format_user( $user );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/list-users', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-list-users', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
 			'users'       => $users,
@@ -105,7 +105,7 @@ class TR_AI_Toolkit_Users_Module {
 
 	private function register_get_user(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-user',
+			'tr-ai-toolkit-get-user',
 			array(
 				'label'       => __( 'Get User', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns profile information for a single user by ID. Includes display name, masked email, role, bio, website and post count. Password and session data are never returned.', 'tr-wordpress-ai-toolkit' ),
@@ -134,7 +134,7 @@ class TR_AI_Toolkit_Users_Module {
 			return new \WP_Error( 'not_found', __( 'User not found.', 'tr-wordpress-ai-toolkit' ) );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/get-user', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-user', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array_merge(
 			$this->format_user( $user ),
@@ -148,7 +148,7 @@ class TR_AI_Toolkit_Users_Module {
 
 	private function register_search_users(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/search-users',
+			'tr-ai-toolkit-search-users',
 			array(
 				'label'       => __( 'Search Users', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Searches users by display name, login or email. Returns matching users with ID, display name, masked email and role.', 'tr-wordpress-ai-toolkit' ),
@@ -187,7 +187,7 @@ class TR_AI_Toolkit_Users_Module {
 
 		$users = array_map( array( $this, 'format_user' ), $user_query->get_results() );
 
-		$this->logger->log( 'tr-ai-toolkit/search-users', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-search-users', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
 			'users' => $users,
@@ -197,7 +197,7 @@ class TR_AI_Toolkit_Users_Module {
 
 	private function register_get_user_roles(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-user-roles',
+			'tr-ai-toolkit-get-user-roles',
 			array(
 				'label'       => __( 'Get User Roles', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns all registered WordPress user roles with name, slug and capability summary (read, edit_posts, publish_posts, manage_options). Does not expose the full capability map.', 'tr-wordpress-ai-toolkit' ),
@@ -231,34 +231,34 @@ class TR_AI_Toolkit_Users_Module {
 			);
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/get-user-roles', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-user-roles', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array( 'roles' => $roles, 'total' => count( $roles ) );
 	}
 
 	public function handles( string $name ): bool {
 		return in_array( $name, array(
-			'tr-ai-toolkit/list-users', 'tr-ai-toolkit/get-user',
-			'tr-ai-toolkit/search-users', 'tr-ai-toolkit/get-user-roles',
+			'tr-ai-toolkit-list-users', 'tr-ai-toolkit-get-user',
+			'tr-ai-toolkit-search-users', 'tr-ai-toolkit-get-user-roles',
 		), true );
 	}
 
 	public function execute( string $name, array $args ): mixed {
 		return match ( $name ) {
-			'tr-ai-toolkit/list-users'     => $this->execute_list_users( $args ),
-			'tr-ai-toolkit/get-user'       => $this->execute_get_user( $args ),
-			'tr-ai-toolkit/search-users'   => $this->execute_search_users( $args ),
-			'tr-ai-toolkit/get-user-roles' => $this->execute_get_user_roles( $args ),
+			'tr-ai-toolkit-list-users'     => $this->execute_list_users( $args ),
+			'tr-ai-toolkit-get-user'       => $this->execute_get_user( $args ),
+			'tr-ai-toolkit-search-users'   => $this->execute_search_users( $args ),
+			'tr-ai-toolkit-get-user-roles' => $this->execute_get_user_roles( $args ),
 			default                        => new \WP_Error( 'not_found', "Unknown tool: {$name}" ),
 		};
 	}
 
 	public function get_mcp_tools(): array {
 		return array(
-			array( 'name' => 'tr-ai-toolkit/list-users', 'description' => 'Returns a paginated list of users. Email addresses are masked for privacy.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ), 'role' => array( 'type' => 'string', 'description' => 'Filter by role: administrator, editor, author, contributor, subscriber.' ) ) ) ),
-			array( 'name' => 'tr-ai-toolkit/get-user', 'description' => 'Returns profile details of a single user by ID. Email is masked.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'user_id' ), 'properties' => array( 'user_id' => array( 'type' => 'integer' ) ) ) ),
-			array( 'name' => 'tr-ai-toolkit/search-users', 'description' => 'Search users by display name or username. Email is never returned.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'query' ), 'properties' => array( 'query' => array( 'type' => 'string' ), 'per_page' => array( 'type' => 'integer' ) ) ) ),
-			array( 'name' => 'tr-ai-toolkit/get-user-roles', 'description' => 'Returns all registered user roles with their display names and key capabilities.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit-list-users', 'description' => 'Returns a paginated list of users. Email addresses are masked for privacy.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ), 'role' => array( 'type' => 'string', 'description' => 'Filter by role: administrator, editor, author, contributor, subscriber.' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit-get-user', 'description' => 'Returns profile details of a single user by ID. Email is masked.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'user_id' ), 'properties' => array( 'user_id' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit-search-users', 'description' => 'Search users by display name or username. Email is never returned.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'query' ), 'properties' => array( 'query' => array( 'type' => 'string' ), 'per_page' => array( 'type' => 'integer' ) ) ) ),
+			array( 'name' => 'tr-ai-toolkit-get-user-roles', 'description' => 'Returns all registered user roles with their display names and key capabilities.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
 		);
 	}
 

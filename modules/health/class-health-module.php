@@ -38,7 +38,7 @@ class TR_AI_Toolkit_Health_Module {
 
 	private function register_get_wordpress_info(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-wordpress-info',
+			'tr-ai-toolkit-get-wordpress-info',
 			array(
 				'label'       => __( 'Get WordPress Info', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns WordPress version, site URL, language, timezone, admin email (masked), multisite status and memory limit. No credentials or file paths are exposed.', 'tr-wordpress-ai-toolkit' ),
@@ -62,7 +62,7 @@ class TR_AI_Toolkit_Health_Module {
 			? '***@' . substr( $admin_email, $at_pos + 1 )
 			: '***';
 
-		$this->logger->log( 'tr-ai-toolkit/get-wordpress-info', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-wordpress-info', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
 			'wordpress_version' => $wp_version,
@@ -82,7 +82,7 @@ class TR_AI_Toolkit_Health_Module {
 
 	private function register_get_php_version(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-php-version',
+			'tr-ai-toolkit-get-php-version',
 			array(
 				'label'       => __( 'Get PHP Version', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns the server PHP version, extensions relevant to WordPress, and whether the version meets current WordPress requirements.', 'tr-wordpress-ai-toolkit' ),
@@ -108,7 +108,7 @@ class TR_AI_Toolkit_Health_Module {
 			$ext_status[ $ext ] = extension_loaded( $ext );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/get-php-version', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-php-version', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
 			'php_version'       => PHP_VERSION,
@@ -123,7 +123,7 @@ class TR_AI_Toolkit_Health_Module {
 
 	private function register_get_active_plugins(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-active-plugins',
+			'tr-ai-toolkit-get-active-plugins',
 			array(
 				'label'       => __( 'Get Active Plugins', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns all currently active plugins with name, version, author and update availability. Does not expose file paths or plugin source code.', 'tr-wordpress-ai-toolkit' ),
@@ -160,7 +160,7 @@ class TR_AI_Toolkit_Health_Module {
 			);
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/get-active-plugins', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-active-plugins', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
 			'plugins' => $plugins,
@@ -170,7 +170,7 @@ class TR_AI_Toolkit_Health_Module {
 
 	private function register_get_active_theme(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-active-theme',
+			'tr-ai-toolkit-get-active-theme',
 			array(
 				'label'       => __( 'Get Active Theme', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns the active theme name, version, author, parent theme (if any) and whether it supports key WordPress features.', 'tr-wordpress-ai-toolkit' ),
@@ -200,7 +200,7 @@ class TR_AI_Toolkit_Health_Module {
 			'align-wide'         => current_theme_supports( 'align-wide' ),
 		);
 
-		$this->logger->log( 'tr-ai-toolkit/get-active-theme', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-active-theme', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
 			'name'        => $theme->get( 'Name' ),
@@ -220,7 +220,7 @@ class TR_AI_Toolkit_Health_Module {
 
 	private function register_get_site_health_summary(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-site-health-summary',
+			'tr-ai-toolkit-get-site-health-summary',
 			array(
 				'label'       => __( 'Get Site Health Summary', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns a site health overview: post/page/media counts, WordPress and PHP versions, debug mode status, HTTPS status, and whether automatic updates are enabled.', 'tr-wordpress-ai-toolkit' ),
@@ -243,7 +243,7 @@ class TR_AI_Toolkit_Health_Module {
 		$media_count  = wp_count_posts( 'attachment' );
 		$user_count   = count_users();
 
-		$this->logger->log( 'tr-ai-toolkit/get-site-health-summary', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-site-health-summary', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
 			'wordpress_version'    => $wp_version,
@@ -268,7 +268,7 @@ class TR_AI_Toolkit_Health_Module {
 
 	private function register_get_permalink_structure(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-permalink-structure',
+			'tr-ai-toolkit-get-permalink-structure',
 			array(
 				'label'       => __( 'Get Permalink Structure', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns the current permalink structure, category and tag base prefixes, and whether pretty permalinks are enabled.', 'tr-wordpress-ai-toolkit' ),
@@ -286,7 +286,7 @@ class TR_AI_Toolkit_Health_Module {
 	private function execute_get_permalink_structure( array $input ): array {
 		$structure = get_option( 'permalink_structure' );
 
-		$this->logger->log( 'tr-ai-toolkit/get-permalink-structure', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-permalink-structure', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
 			'structure'          => $structure ?: '/?p=%post_id%',
@@ -299,7 +299,7 @@ class TR_AI_Toolkit_Health_Module {
 
 	private function register_get_cron_status(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-cron-status',
+			'tr-ai-toolkit-get-cron-status',
 			array(
 				'label'       => __( 'Get Cron Status', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns the WP-Cron status, whether it is disabled, and the next scheduled events (up to 20). Does not expose cron hook arguments or callback details.', 'tr-wordpress-ai-toolkit' ),
@@ -315,35 +315,35 @@ class TR_AI_Toolkit_Health_Module {
 
 	public function handles( string $name ): bool {
 		return in_array( $name, array(
-			'tr-ai-toolkit/get-wordpress-info', 'tr-ai-toolkit/get-php-version',
-			'tr-ai-toolkit/get-active-plugins', 'tr-ai-toolkit/get-active-theme',
-			'tr-ai-toolkit/get-site-health-summary', 'tr-ai-toolkit/get-permalink-structure',
-			'tr-ai-toolkit/get-cron-status',
+			'tr-ai-toolkit-get-wordpress-info', 'tr-ai-toolkit-get-php-version',
+			'tr-ai-toolkit-get-active-plugins', 'tr-ai-toolkit-get-active-theme',
+			'tr-ai-toolkit-get-site-health-summary', 'tr-ai-toolkit-get-permalink-structure',
+			'tr-ai-toolkit-get-cron-status',
 		), true );
 	}
 
 	public function execute( string $name, array $args ): mixed {
 		return match ( $name ) {
-			'tr-ai-toolkit/get-wordpress-info'      => $this->execute_get_wordpress_info( $args ),
-			'tr-ai-toolkit/get-php-version'         => $this->execute_get_php_version( $args ),
-			'tr-ai-toolkit/get-active-plugins'      => $this->execute_get_active_plugins( $args ),
-			'tr-ai-toolkit/get-active-theme'        => $this->execute_get_active_theme( $args ),
-			'tr-ai-toolkit/get-site-health-summary' => $this->execute_get_site_health_summary( $args ),
-			'tr-ai-toolkit/get-permalink-structure' => $this->execute_get_permalink_structure( $args ),
-			'tr-ai-toolkit/get-cron-status'         => $this->execute_get_cron_status( $args ),
+			'tr-ai-toolkit-get-wordpress-info'      => $this->execute_get_wordpress_info( $args ),
+			'tr-ai-toolkit-get-php-version'         => $this->execute_get_php_version( $args ),
+			'tr-ai-toolkit-get-active-plugins'      => $this->execute_get_active_plugins( $args ),
+			'tr-ai-toolkit-get-active-theme'        => $this->execute_get_active_theme( $args ),
+			'tr-ai-toolkit-get-site-health-summary' => $this->execute_get_site_health_summary( $args ),
+			'tr-ai-toolkit-get-permalink-structure' => $this->execute_get_permalink_structure( $args ),
+			'tr-ai-toolkit-get-cron-status'         => $this->execute_get_cron_status( $args ),
 			default                                 => new \WP_Error( 'not_found', "Unknown tool: {$name}" ),
 		};
 	}
 
 	public function get_mcp_tools(): array {
 		return array(
-			array( 'name' => 'tr-ai-toolkit/get-wordpress-info', 'description' => 'Returns WordPress version, site URL, admin URL, timezone, language and multisite status.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
-			array( 'name' => 'tr-ai-toolkit/get-php-version', 'description' => 'Returns PHP version, loaded extensions and key configuration values.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
-			array( 'name' => 'tr-ai-toolkit/get-active-plugins', 'description' => 'Returns the list of active plugins with name, version, author and description.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
-			array( 'name' => 'tr-ai-toolkit/get-active-theme', 'description' => 'Returns the active theme name, version, author and template hierarchy.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
-			array( 'name' => 'tr-ai-toolkit/get-site-health-summary', 'description' => 'Returns post/page/media counts, memory limit, debug mode and update status.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
-			array( 'name' => 'tr-ai-toolkit/get-permalink-structure', 'description' => 'Returns permalink structure, category and tag base URLs.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
-			array( 'name' => 'tr-ai-toolkit/get-cron-status', 'description' => 'Returns scheduled WP-Cron events with next run times.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit-get-wordpress-info', 'description' => 'Returns WordPress version, site URL, admin URL, timezone, language and multisite status.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit-get-php-version', 'description' => 'Returns PHP version, loaded extensions and key configuration values.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit-get-active-plugins', 'description' => 'Returns the list of active plugins with name, version, author and description.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit-get-active-theme', 'description' => 'Returns the active theme name, version, author and template hierarchy.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit-get-site-health-summary', 'description' => 'Returns post/page/media counts, memory limit, debug mode and update status.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit-get-permalink-structure', 'description' => 'Returns permalink structure, category and tag base URLs.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
+			array( 'name' => 'tr-ai-toolkit-get-cron-status', 'description' => 'Returns scheduled WP-Cron events with next run times.', 'inputSchema' => array( 'type' => 'object', 'properties' => array() ) ),
 		);
 	}
 
@@ -372,7 +372,7 @@ class TR_AI_Toolkit_Health_Module {
 
 		$overdue_count = count( array_filter( $events, fn( $e ) => $e['overdue'] ) );
 
-		$this->logger->log( 'tr-ai-toolkit/get-cron-status', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-cron-status', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
 			'wp_cron_disabled' => $cron_disabled,
