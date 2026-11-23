@@ -11,6 +11,50 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.3.0] — 2026-11-23
+
+### Security
+- **BUG-11 (Critical): MCP session hijacking** — Any authenticated user could delete another user's session by sending a `DELETE /mcp` request with an arbitrary session ID. Sessions now store the creating user's ID; deletion verifies ownership and returns 403 on mismatch.
+- MCP sessions now store `{user_id, created_at}` instead of just `1`. Invalid or stale sessions on non-initialize requests now return `-32001 Invalid or expired session`.
+- Protocol error messages no longer leak internal tool names, file paths, or method details.
+
+### Fixed
+- **BUG-3 (High): `find-unused-media` always returned empty** — The `meta_query` incorrectly checked `_thumbnail_id` on the attachment's own postmeta. `_thumbnail_id` is stored on the POST that uses the attachment as featured image, not on the attachment. Fixed with a direct SQL query to fetch used attachment IDs, then `post__not_in` exclusion.
+- **BUG-7 (High): WooCommerce double query** — `wc_get_products(limit=-1)` was called twice — once to fetch products and once to count them. The count call always returned `1` due to casting array to int. Single count query with the same filters is now used.
+- **BUG-10 (High): CPT custom field corruption** — `sanitize_text_field()` was applied to all meta values including arrays, turning `['foo','bar']` into the string `"Array"`. New recursive `sanitize_meta_value()` helper preserves arrays, booleans, and numeric types; only strings are sanitized.
+- **BUG-4 (Medium): SEO pagination inconsistency** — `find-missing-meta` fetched `per_page × 3` posts then filtered in PHP, causing page 1 and page 2 results to overlap. Rewritten to use a proper `meta_query` (NOT EXISTS OR empty) at the database level with correct `paged` parameter.
+- **BUG-8 (Medium): WooCommerce update product missing braces** — Conditionals in `execute_update_product()` lacked curly braces. Fixed.
+- **BUG-9 (Low): Inconsistent email masking in WooCommerce** — WooCommerce used `substr_replace()` giving a different mask format than other modules. All modules now use `***@domain.com` format.
+- **BUG-5 (Low): `max_execution_time` raw `-1` value** — Server info tool returned `-1` when PHP has no execution time limit. Now returns `'unlimited'`.
+- **Tool names for WooCommerce, Comments, CPT** — These 3 modules still used `tr-ai-toolkit/toolname` (slash) which is invalid per MCP spec. Renamed to `tr-ai-toolkit-toolname`. All 58 tools now use valid MCP identifiers.
+- MCP protocol response now includes `'isError' => false` on all successful tool calls.
+- MCP protocol negotiation: server now responds with the client's requested version if supported, otherwise falls back gracefully.
+
+### Added
+- **Activity Log filter bar** — Live search by ability name and status dropdown (all / success / denied / error) with row count on the Activity Log admin page.
+- **Clear All Logs** — One-click "Clear All Logs" button on the Activity Log page with AJAX confirmation. Calls new `Logger::clear_all()` method.
+- **Test MCP Connection** — New section on the Connection Guide admin page. Fires an internal REST `ping` request and displays pass/fail inline. No credentials needed.
+- **Settings descriptions** — Helpful hint text added to Enable Plugin, Log Level, Permissions, and Log Retention settings fields.
+- `Logger::clear_all()` method — deletes all log entries and returns the deleted row count.
+
+### Documentation
+- `docs/CONNECTION_GUIDE.md` — Step-by-step connection guide for all MCP clients.
+- `docs/CLAUDE_DESKTOP.md` — HTTP and STDIO transport setup for Claude Desktop.
+- `docs/CLAUDE_CODE.md` — Claude.ai web connector and Claude Code CLI setup.
+- `docs/MCP_PROTOCOL.md` — Full technical reference: protocol version, endpoint, session lifecycle, error codes, examples.
+- `docs/AVAILABLE_TOOLS.md` — Complete 58-tool reference with capabilities and descriptions.
+- `docs/PERMISSIONS.md` — Per-tool capability requirements and sensitive data handling.
+- `docs/TROUBLESHOOTING.md` — Common issues and solutions including tool name fix, auth errors, pagination, WooCommerce.
+- `docs/SECURITY_REVIEW.md` — Threat model, security controls, and known limitations.
+- `README.md` — Updated version badge (1.3.0), tool count (58), protocol version (2025-03-26), all tool names corrected.
+
+### Tests
+- `MCPServerTest.php` (new) — 11 tests covering: initialize response/version negotiation, ping, tools/list, tools/call with unknown tool, unauthenticated 401, session ownership enforcement (403), plugin-disabled 503.
+- `LoggerTest` — Added tests for new `clear_all()` method.
+- `ContentModuleTest` — Fixed all tool name references from `tr-ai-toolkit/` to `tr-ai-toolkit-`.
+
+---
+
 ## [1.2.2] — 2026-11-21
 
 ### Fixed
