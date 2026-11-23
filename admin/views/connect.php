@@ -292,6 +292,23 @@ defined( 'ABSPATH' ) || exit;
 		</div>
 	</div>
 
+	<!-- Test Connection -->
+	<div class="tr-section">
+		<h2>
+			<span class="dashicons dashicons-performance" style="color:#2271b1;vertical-align:middle;margin-right:6px;"></span>
+			<?php esc_html_e( 'Test MCP Connection', 'tr-wordpress-ai-toolkit' ); ?>
+		</h2>
+		<p style="font-size:14px;color:#3c434a;">
+			<?php esc_html_e( 'Verify that the MCP server is running and responding to requests on this server.', 'tr-wordpress-ai-toolkit' ); ?>
+		</p>
+		<button id="tr-test-connection-btn" class="button button-secondary" type="button">
+			<span class="dashicons dashicons-performance" style="vertical-align:middle;margin-right:4px;font-size:14px;width:14px;height:14px;"></span>
+			<?php esc_html_e( 'Test MCP Connection', 'tr-wordpress-ai-toolkit' ); ?>
+		</button>
+		<div id="tr-test-spinner" class="spinner" style="display:none;float:none;margin-left:8px;vertical-align:middle;display:inline-block;"></div>
+		<div id="tr-test-result" style="display:none;margin-top:12px;"></div>
+	</div>
+
 	<!-- STDIO Transport (Claude Desktop local / WP-CLI) -->
 	<div class="tr-section">
 		<h2><?php esc_html_e( 'STDIO Transport (Claude Desktop — Local Server)', 'tr-wordpress-ai-toolkit' ); ?></h2>

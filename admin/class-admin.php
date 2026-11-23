@@ -33,6 +33,8 @@ class TR_AI_Toolkit_Admin {
 		add_action( 'admin_notices', array( $this, 'show_mcp_adapter_notice' ) );
 		add_action( 'wp_ajax_tr_ai_toolkit_generate_app_password', array( $this, 'ajax_generate_app_password' ) );
 		add_action( 'wp_ajax_tr_ai_toolkit_revoke_app_password', array( $this, 'ajax_revoke_app_password' ) );
+		add_action( 'wp_ajax_tr_ai_toolkit_test_connection', array( $this, 'ajax_test_connection' ) );
+		add_action( 'wp_ajax_tr_ai_toolkit_clear_logs', array( $this, 'ajax_clear_logs' ) );
 	}
 
 	/**
@@ -142,7 +144,13 @@ class TR_AI_Toolkit_Admin {
 					'revokeAccess'   => __( 'Revoke Access', 'tr-wordpress-ai-toolkit' ),
 					'revokeConfirm'  => __( 'Are you sure? This will disconnect all AI assistants using the Quick Connect credentials. Any manually added credentials will still work.', 'tr-wordpress-ai-toolkit' ),
 					'revoking'       => __( 'Revoking…', 'tr-wordpress-ai-toolkit' ),
-					'revokeReload'   => __( 'Reloading page…', 'tr-wordpress-ai-toolkit' ),
+					'revokeReload'       => __( 'Reloading page…', 'tr-wordpress-ai-toolkit' ),
+				'testingConnection'  => __( 'Testing…', 'tr-wordpress-ai-toolkit' ),
+				'testConnection'     => __( 'Test MCP Connection', 'tr-wordpress-ai-toolkit' ),
+				'clearLogs'          => __( 'Clear All Logs', 'tr-wordpress-ai-toolkit' ),
+				'clearLogsConfirm'   => __( 'Delete all log entries? This cannot be undone.', 'tr-wordpress-ai-toolkit' ),
+				'clearing'           => __( 'Clearing…', 'tr-wordpress-ai-toolkit' ),
+				'noLogsLeft'         => __( 'All log entries have been cleared.', 'tr-wordpress-ai-toolkit' ),
 				),
 			)
 		);
@@ -325,6 +333,74 @@ class TR_AI_Toolkit_Admin {
 		}
 
 		wp_send_json_success( array( 'message' => __( 'Access revoked. The AI assistant can no longer connect to this site.', 'tr-wordpress-ai-toolkit' ) ) );
+	}
+
+	/**
+	 * Runs a local MCP ping via the internal REST dispatcher and reports success/failure.
+	 */
+	public function ajax_test_connection(): void {
+		if ( ! check_ajax_referer( 'tr_ai_toolkit_admin', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'tr-wordpress-ai-toolkit' ) ) );
+			return;
+		}
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'tr-wordpress-ai-toolkit' ) ) );
+			return;
+		}
+
+		$rest_request = new \WP_REST_Request( 'POST', '/tr-ai-toolkit/mcp' );
+		$rest_request->set_header( 'Content-Type', 'application/json' );
+		$rest_request->set_body( wp_json_encode( array( 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'ping' ) ) );
+
+		$response = rest_do_request( $rest_request );
+		$status   = $response->get_status();
+		$data     = rest_get_server()->response_to_data( $response, false );
+
+		if ( 200 === $status && isset( $data['result'] ) ) {
+			wp_send_json_success( array(
+				'message' => __( 'MCP server is reachable and responding correctly.', 'tr-wordpress-ai-toolkit' ),
+			) );
+			return;
+		}
+
+		$error_msg = isset( $data['error']['message'] ) ? $data['error']['message'] : __( 'Unexpected response.', 'tr-wordpress-ai-toolkit' );
+		wp_send_json_error( array(
+			'message'     => sprintf(
+				/* translators: 1: HTTP status code, 2: error message */
+				__( 'Connection test failed (HTTP %1$s): %2$s', 'tr-wordpress-ai-toolkit' ),
+				$status,
+				$error_msg
+			),
+		) );
+	}
+
+	/**
+	 * Clears all activity log entries.
+	 */
+	public function ajax_clear_logs(): void {
+		if ( ! check_ajax_referer( 'tr_ai_toolkit_admin', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'tr-wordpress-ai-toolkit' ) ) );
+			return;
+		}
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'tr-wordpress-ai-toolkit' ) ) );
+			return;
+		}
+
+		$deleted = $this->logger->clear_all();
+		wp_send_json_success( array(
+			'message' => sprintf(
+				/* translators: %d: number of log entries deleted */
+				_n(
+					'Cleared %d log entry.',
+					'Cleared %d log entries.',
+					$deleted,
+					'tr-wordpress-ai-toolkit'
+				),
+				$deleted
+			),
+			'deleted' => $deleted,
+		) );
 	}
 
 	// -------------------------------------------------------------------------
