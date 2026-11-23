@@ -44,7 +44,7 @@ class TR_AI_Toolkit_Comments_Module {
 
 	private function register_get_comment_summary(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-comment-summary',
+			'tr-ai-toolkit-get-comment-summary',
 			array(
 				'label'       => __( 'Get Comment Summary', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns comment counts broken down by status: pending, approved, spam and trash.', 'tr-wordpress-ai-toolkit' ),
@@ -64,7 +64,7 @@ class TR_AI_Toolkit_Comments_Module {
 	private function execute_get_comment_summary( array $input ): array {
 		$counts = wp_count_comments();
 
-		$this->logger->log( 'tr-ai-toolkit/get-comment-summary', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-comment-summary', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'approved'      => (int) $counts->approved,
 			'pending'       => (int) $counts->moderated,
@@ -80,7 +80,7 @@ class TR_AI_Toolkit_Comments_Module {
 
 	private function register_list_comments(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/list-comments',
+			'tr-ai-toolkit-list-comments',
 			array(
 				'label'       => __( 'List Comments', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns a paginated list of comments filtered by status.', 'tr-wordpress-ai-toolkit' ),
@@ -125,7 +125,7 @@ class TR_AI_Toolkit_Comments_Module {
 		$comments = get_comments( $args );
 		$total    = (int) get_comments( array_merge( $args, array( 'number' => 0, 'count' => true ) ) );
 
-		$this->logger->log( 'tr-ai-toolkit/list-comments', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-list-comments', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'comments' => array_map( array( $this, 'format_comment' ), $comments ),
 			'total'    => $total,
@@ -141,7 +141,7 @@ class TR_AI_Toolkit_Comments_Module {
 
 	private function register_get_comment(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-comment',
+			'tr-ai-toolkit-get-comment',
 			array(
 				'label'       => __( 'Get Comment', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns full details for a single comment by ID.', 'tr-wordpress-ai-toolkit' ),
@@ -171,7 +171,7 @@ class TR_AI_Toolkit_Comments_Module {
 			return new \WP_Error( 'not_found', 'Comment not found.', array( 'status' => 404 ) );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/get-comment', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-comment', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return $this->format_comment_detail( $comment );
 	}
 
@@ -181,7 +181,7 @@ class TR_AI_Toolkit_Comments_Module {
 
 	private function register_approve_comment(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/approve-comment',
+			'tr-ai-toolkit-approve-comment',
 			array(
 				'label'       => __( 'Approve Comment', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Approves a pending comment so it appears publicly.', 'tr-wordpress-ai-toolkit' ),
@@ -215,11 +215,11 @@ class TR_AI_Toolkit_Comments_Module {
 		$result = wp_set_comment_status( $comment_id, 'approve' );
 
 		if ( ! $result ) {
-			$this->logger->log( 'tr-ai-toolkit/approve-comment', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, 'wp_set_comment_status failed' );
+			$this->logger->log( 'tr-ai-toolkit-approve-comment', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, 'wp_set_comment_status failed' );
 			return new \WP_Error( 'approve_failed', 'Failed to approve comment.', array( 'status' => 500 ) );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/approve-comment', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-approve-comment', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'comment_id' => $comment_id,
 			'status'     => 'approved',
@@ -233,7 +233,7 @@ class TR_AI_Toolkit_Comments_Module {
 
 	private function register_trash_comment(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/trash-comment',
+			'tr-ai-toolkit-trash-comment',
 			array(
 				'label'       => __( 'Trash Comment', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Moves a comment to trash. Does not permanently delete it.', 'tr-wordpress-ai-toolkit' ),
@@ -267,11 +267,11 @@ class TR_AI_Toolkit_Comments_Module {
 		$result = wp_trash_comment( $comment_id );
 
 		if ( ! $result ) {
-			$this->logger->log( 'tr-ai-toolkit/trash-comment', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, 'wp_trash_comment failed' );
+			$this->logger->log( 'tr-ai-toolkit-trash-comment', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, 'wp_trash_comment failed' );
 			return new \WP_Error( 'trash_failed', 'Failed to trash comment.', array( 'status' => 500 ) );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/trash-comment', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-trash-comment', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'comment_id' => $comment_id,
 			'status'     => 'trash',
@@ -285,7 +285,7 @@ class TR_AI_Toolkit_Comments_Module {
 
 	private function register_reply_to_comment(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/reply-to-comment',
+			'tr-ai-toolkit-reply-to-comment',
 			array(
 				'label'       => __( 'Reply to Comment', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Posts a reply to an existing comment as the current admin user.', 'tr-wordpress-ai-toolkit' ),
@@ -336,11 +336,11 @@ class TR_AI_Toolkit_Comments_Module {
 		) );
 
 		if ( ! $new_id ) {
-			$this->logger->log( 'tr-ai-toolkit/reply-to-comment', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, 'wp_insert_comment returned false' );
+			$this->logger->log( 'tr-ai-toolkit-reply-to-comment', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, 'wp_insert_comment returned false' );
 			return new \WP_Error( 'insert_failed', 'Failed to post reply.', array( 'status' => 500 ) );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/reply-to-comment', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS, "Reply ID {$new_id}" );
+		$this->logger->log( 'tr-ai-toolkit-reply-to-comment', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS, "Reply ID {$new_id}" );
 		return array(
 			'reply_id'  => $new_id,
 			'parent_id' => $parent_id,
@@ -383,23 +383,23 @@ class TR_AI_Toolkit_Comments_Module {
 
 	public function handles( string $name ): bool {
 		return in_array( $name, array(
-			'tr-ai-toolkit/get-comment-summary',
-			'tr-ai-toolkit/list-comments',
-			'tr-ai-toolkit/get-comment',
-			'tr-ai-toolkit/approve-comment',
-			'tr-ai-toolkit/trash-comment',
-			'tr-ai-toolkit/reply-to-comment',
+			'tr-ai-toolkit-get-comment-summary',
+			'tr-ai-toolkit-list-comments',
+			'tr-ai-toolkit-get-comment',
+			'tr-ai-toolkit-approve-comment',
+			'tr-ai-toolkit-trash-comment',
+			'tr-ai-toolkit-reply-to-comment',
 		), true );
 	}
 
 	public function execute( string $name, array $args ): mixed {
 		return match ( $name ) {
-			'tr-ai-toolkit/get-comment-summary' => $this->execute_get_comment_summary( $args ),
-			'tr-ai-toolkit/list-comments'       => $this->execute_list_comments( $args ),
-			'tr-ai-toolkit/get-comment'         => $this->execute_get_comment( $args ),
-			'tr-ai-toolkit/approve-comment'     => $this->execute_approve_comment( $args ),
-			'tr-ai-toolkit/trash-comment'       => $this->execute_trash_comment( $args ),
-			'tr-ai-toolkit/reply-to-comment'    => $this->execute_reply_to_comment( $args ),
+			'tr-ai-toolkit-get-comment-summary' => $this->execute_get_comment_summary( $args ),
+			'tr-ai-toolkit-list-comments'       => $this->execute_list_comments( $args ),
+			'tr-ai-toolkit-get-comment'         => $this->execute_get_comment( $args ),
+			'tr-ai-toolkit-approve-comment'     => $this->execute_approve_comment( $args ),
+			'tr-ai-toolkit-trash-comment'       => $this->execute_trash_comment( $args ),
+			'tr-ai-toolkit-reply-to-comment'    => $this->execute_reply_to_comment( $args ),
 			default                             => new \WP_Error( 'not_found', "Tool '{$name}' not found.", array( 'status' => 404 ) ),
 		};
 	}
@@ -407,12 +407,12 @@ class TR_AI_Toolkit_Comments_Module {
 	public function get_mcp_tools(): array {
 		return array(
 			array(
-				'name'        => 'tr-ai-toolkit/get-comment-summary',
+				'name'        => 'tr-ai-toolkit-get-comment-summary',
 				'description' => 'Returns comment counts by status: pending (hold), approved, spam, trash.',
 				'inputSchema' => array( 'type' => 'object', 'properties' => array() ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/list-comments',
+				'name'        => 'tr-ai-toolkit-list-comments',
 				'description' => 'Returns paginated comments filtered by status (hold/approve/spam/trash), optionally by post ID.',
 				'inputSchema' => array( 'type' => 'object', 'properties' => array(
 					'status'   => array( 'type' => 'string' ),
@@ -422,28 +422,28 @@ class TR_AI_Toolkit_Comments_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/get-comment',
+				'name'        => 'tr-ai-toolkit-get-comment',
 				'description' => 'Returns full details for a single comment by ID.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'comment_id' ), 'properties' => array(
 					'comment_id' => array( 'type' => 'integer' ),
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/approve-comment',
+				'name'        => 'tr-ai-toolkit-approve-comment',
 				'description' => 'Approves a pending comment so it appears publicly on the post.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'comment_id' ), 'properties' => array(
 					'comment_id' => array( 'type' => 'integer' ),
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/trash-comment',
+				'name'        => 'tr-ai-toolkit-trash-comment',
 				'description' => 'Moves a comment to trash. Does not permanently delete it.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'comment_id' ), 'properties' => array(
 					'comment_id' => array( 'type' => 'integer' ),
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/reply-to-comment',
+				'name'        => 'tr-ai-toolkit-reply-to-comment',
 				'description' => 'Posts a reply to an existing comment as the currently authenticated admin user.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'comment_id', 'content' ), 'properties' => array(
 					'comment_id' => array( 'type' => 'integer' ),

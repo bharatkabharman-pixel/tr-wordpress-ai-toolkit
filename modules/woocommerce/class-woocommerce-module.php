@@ -55,7 +55,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 
 	private function register_list_products(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-list-products',
+			'tr-ai-toolkit-wc-list-products',
 			array(
 				'label'       => __( 'List WooCommerce Products', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns a paginated list of WooCommerce products with optional filters.', 'tr-wordpress-ai-toolkit' ),
@@ -94,23 +94,27 @@ class TR_AI_Toolkit_WooCommerce_Module {
 			'category'     => ! empty( $input['category'] ) ? array( sanitize_text_field( $input['category'] ) ) : array(),
 		);
 
-		$products = wc_get_products( array_filter( $args, fn( $v ) => $v !== '' && $v !== array() ) );
-		$total    = (int) wc_get_products( array_merge( $args, array( 'limit' => -1, 'return' => 'ids' ) ) );
+		$clean_args = array_filter( $args, fn( $v ) => $v !== '' && $v !== array() );
+		$products   = wc_get_products( $clean_args );
+
+		// Count total using a single ID-only query — reuse the same filters.
+		$count_args = array_merge( $clean_args, array( 'limit' => -1, 'return' => 'ids' ) );
+		$total      = count( wc_get_products( $count_args ) );
 
 		$result = array(
 			'products'   => array_map( array( $this, 'format_product' ), $products ),
-			'total'      => count( wc_get_products( array( 'status' => $args['status'], 'limit' => -1, 'return' => 'ids' ) ) ),
+			'total'      => $total,
 			'page'       => $page,
 			'per_page'   => $per_page,
 		);
 
-		$this->logger->log( 'tr-ai-toolkit/wc-list-products', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-wc-list-products', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return $result;
 	}
 
 	private function register_get_product(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-get-product',
+			'tr-ai-toolkit-wc-get-product',
 			array(
 				'label'       => __( 'Get WooCommerce Product', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns full details for a single WooCommerce product.', 'tr-wordpress-ai-toolkit' ),
@@ -140,13 +144,13 @@ class TR_AI_Toolkit_WooCommerce_Module {
 			return new \WP_Error( 'not_found', 'Product not found.', array( 'status' => 404 ) );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/wc-get-product', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-wc-get-product', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return $this->format_product( $product );
 	}
 
 	private function register_search_products(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-search-products',
+			'tr-ai-toolkit-wc-search-products',
 			array(
 				'label'       => __( 'Search WooCommerce Products', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Searches products by name or SKU.', 'tr-wordpress-ai-toolkit' ),
@@ -180,7 +184,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 			'return' => 'objects',
 		) );
 
-		$this->logger->log( 'tr-ai-toolkit/wc-search-products', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-wc-search-products', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'query'    => $term,
 			'products' => array_map( array( $this, 'format_product' ), $products ),
@@ -190,7 +194,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 
 	private function register_create_product(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-create-product',
+			'tr-ai-toolkit-wc-create-product',
 			array(
 				'label'       => __( 'Create WooCommerce Product', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Creates a new simple WooCommerce product.', 'tr-wordpress-ai-toolkit' ),
@@ -248,17 +252,17 @@ class TR_AI_Toolkit_WooCommerce_Module {
 		$id = $product->save();
 
 		if ( ! $id ) {
-			$this->logger->log( 'tr-ai-toolkit/wc-create-product', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, 'save() returned 0' );
+			$this->logger->log( 'tr-ai-toolkit-wc-create-product', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, 'save() returned 0' );
 			return new \WP_Error( 'create_failed', 'Failed to create product.', array( 'status' => 500 ) );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/wc-create-product', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS, "Created product ID {$id}" );
+		$this->logger->log( 'tr-ai-toolkit-wc-create-product', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS, "Created product ID {$id}" );
 		return $this->format_product( wc_get_product( $id ) );
 	}
 
 	private function register_update_product(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-update-product',
+			'tr-ai-toolkit-wc-update-product',
 			array(
 				'label'       => __( 'Update WooCommerce Product', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Updates an existing WooCommerce product — name, price, stock or status.', 'tr-wordpress-ai-toolkit' ),
@@ -297,30 +301,44 @@ class TR_AI_Toolkit_WooCommerce_Module {
 		}
 
 		if ( ! current_user_can( 'edit_post', $product->get_id() ) ) {
-			$this->logger->log( 'tr-ai-toolkit/wc-update-product', $input, TR_AI_Toolkit_Logger::STATUS_DENIED );
+			$this->logger->log( 'tr-ai-toolkit-wc-update-product', $input, TR_AI_Toolkit_Logger::STATUS_DENIED );
 			return new \WP_Error( 'forbidden', 'Cannot edit this product.', array( 'status' => 403 ) );
 		}
 
-		if ( isset( $input['name'] ) )           $product->set_name( sanitize_text_field( $input['name'] ) );
-		if ( isset( $input['status'] ) )         $product->set_status( sanitize_text_field( $input['status'] ) );
-		if ( isset( $input['regular_price'] ) )  $product->set_regular_price( wc_format_decimal( $input['regular_price'] ) );
-		if ( isset( $input['sale_price'] ) )     $product->set_sale_price( wc_format_decimal( $input['sale_price'] ) );
-		if ( isset( $input['description'] ) )    $product->set_description( wp_kses_post( $input['description'] ) );
-		if ( isset( $input['short_description'] ) ) $product->set_short_description( wp_kses_post( $input['short_description'] ) );
-		if ( isset( $input['sku'] ) )            $product->set_sku( sanitize_text_field( $input['sku'] ) );
+		if ( isset( $input['name'] ) ) {
+			$product->set_name( sanitize_text_field( $input['name'] ) );
+		}
+		if ( isset( $input['status'] ) ) {
+			$product->set_status( sanitize_text_field( $input['status'] ) );
+		}
+		if ( isset( $input['regular_price'] ) ) {
+			$product->set_regular_price( wc_format_decimal( $input['regular_price'] ) );
+		}
+		if ( isset( $input['sale_price'] ) ) {
+			$product->set_sale_price( wc_format_decimal( $input['sale_price'] ) );
+		}
+		if ( isset( $input['description'] ) ) {
+			$product->set_description( wp_kses_post( $input['description'] ) );
+		}
+		if ( isset( $input['short_description'] ) ) {
+			$product->set_short_description( wp_kses_post( $input['short_description'] ) );
+		}
+		if ( isset( $input['sku'] ) ) {
+			$product->set_sku( sanitize_text_field( $input['sku'] ) );
+		}
 		if ( isset( $input['stock_quantity'] ) ) {
 			$product->set_manage_stock( true );
 			$product->set_stock_quantity( (int) $input['stock_quantity'] );
 		}
 
 		$product->save();
-		$this->logger->log( 'tr-ai-toolkit/wc-update-product', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-wc-update-product', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return $this->format_product( $product );
 	}
 
 	private function register_get_low_stock_products(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-get-low-stock-products',
+			'tr-ai-toolkit-wc-get-low-stock-products',
 			array(
 				'label'       => __( 'Get Low Stock Products', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns products that are low in stock or out of stock.', 'tr-wordpress-ai-toolkit' ),
@@ -354,7 +372,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 			'status'       => 'publish',
 		) );
 
-		$this->logger->log( 'tr-ai-toolkit/wc-get-low-stock-products', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-wc-get-low-stock-products', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'stock_status' => $stock_status,
 			'products'     => array_map( array( $this, 'format_product' ), $products ),
@@ -368,7 +386,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 
 	private function register_list_orders(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-list-orders',
+			'tr-ai-toolkit-wc-list-orders',
 			array(
 				'label'       => __( 'List WooCommerce Orders', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns a paginated list of WooCommerce orders with optional status filter.', 'tr-wordpress-ai-toolkit' ),
@@ -408,7 +426,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 
 		$orders = wc_get_orders( $args );
 
-		$this->logger->log( 'tr-ai-toolkit/wc-list-orders', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-wc-list-orders', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'orders'   => array_map( array( $this, 'format_order' ), $orders ),
 			'page'     => $page,
@@ -419,7 +437,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 
 	private function register_get_order(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-get-order',
+			'tr-ai-toolkit-wc-get-order',
 			array(
 				'label'       => __( 'Get WooCommerce Order', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns full details for a single WooCommerce order including line items.', 'tr-wordpress-ai-toolkit' ),
@@ -449,13 +467,13 @@ class TR_AI_Toolkit_WooCommerce_Module {
 			return new \WP_Error( 'not_found', 'Order not found.', array( 'status' => 404 ) );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/wc-get-order', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-wc-get-order', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return $this->format_order_detail( $order );
 	}
 
 	private function register_update_order_status(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-update-order-status',
+			'tr-ai-toolkit-wc-update-order-status',
 			array(
 				'label'       => __( 'Update WooCommerce Order Status', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Updates the status of an existing WooCommerce order.', 'tr-wordpress-ai-toolkit' ),
@@ -490,7 +508,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 		$new_status = sanitize_text_field( $input['status'] ?? '' );
 		$order->update_status( $new_status, ! empty( $input['note'] ) ? sanitize_textarea_field( $input['note'] ) : '' );
 
-		$this->logger->log( 'tr-ai-toolkit/wc-update-order-status', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-wc-update-order-status', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'order_id'   => $order->get_id(),
 			'new_status' => $order->get_status(),
@@ -504,7 +522,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 
 	private function register_list_customers(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-list-customers',
+			'tr-ai-toolkit-wc-list-customers',
 			array(
 				'label'       => __( 'List WooCommerce Customers', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns a paginated list of WooCommerce customers.', 'tr-wordpress-ai-toolkit' ),
@@ -552,14 +570,14 @@ class TR_AI_Toolkit_WooCommerce_Module {
 				'id'           => $user->ID,
 				'username'     => $user->user_login,
 				'display_name' => $user->display_name,
-				'email'        => substr_replace( $user->user_email, '***', 2, strpos( $user->user_email, '@' ) - 2 ),
+				'email'        => '***@' . ( strpos( $user->user_email, '@' ) !== false ? substr( $user->user_email, strpos( $user->user_email, '@' ) + 1 ) : '' ),
 				'orders_count' => $customer->get_order_count(),
 				'total_spent'  => wc_price( $customer->get_total_spent() ),
 				'registered'   => $user->user_registered,
 			);
 		}, $users );
 
-		$this->logger->log( 'tr-ai-toolkit/wc-list-customers', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-wc-list-customers', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'customers' => $customers,
 			'total'     => $total,
@@ -574,7 +592,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 
 	private function register_list_coupons(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-list-coupons',
+			'tr-ai-toolkit-wc-list-coupons',
 			array(
 				'label'       => __( 'List WooCommerce Coupons', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns all WooCommerce coupons with discount type and usage stats.', 'tr-wordpress-ai-toolkit' ),
@@ -623,7 +641,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 			);
 		}, $posts );
 
-		$this->logger->log( 'tr-ai-toolkit/wc-list-coupons', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-wc-list-coupons', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'coupons'  => $coupons,
 			'page'     => $page,
@@ -637,7 +655,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 
 	private function register_get_sales_summary(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/wc-get-sales-summary',
+			'tr-ai-toolkit-wc-get-sales-summary',
 			array(
 				'label'       => __( 'Get WooCommerce Sales Summary', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns total revenue, order counts by status and top products.', 'tr-wordpress-ai-toolkit' ),
@@ -689,7 +707,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 			) ) );
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/wc-get-sales-summary', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-wc-get-sales-summary', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'period'              => $period,
 			'from'                => $date_from,
@@ -768,18 +786,18 @@ class TR_AI_Toolkit_WooCommerce_Module {
 
 	public function handles( string $name ): bool {
 		return in_array( $name, array(
-			'tr-ai-toolkit/wc-list-products',
-			'tr-ai-toolkit/wc-get-product',
-			'tr-ai-toolkit/wc-search-products',
-			'tr-ai-toolkit/wc-create-product',
-			'tr-ai-toolkit/wc-update-product',
-			'tr-ai-toolkit/wc-get-low-stock-products',
-			'tr-ai-toolkit/wc-list-orders',
-			'tr-ai-toolkit/wc-get-order',
-			'tr-ai-toolkit/wc-update-order-status',
-			'tr-ai-toolkit/wc-list-customers',
-			'tr-ai-toolkit/wc-list-coupons',
-			'tr-ai-toolkit/wc-get-sales-summary',
+			'tr-ai-toolkit-wc-list-products',
+			'tr-ai-toolkit-wc-get-product',
+			'tr-ai-toolkit-wc-search-products',
+			'tr-ai-toolkit-wc-create-product',
+			'tr-ai-toolkit-wc-update-product',
+			'tr-ai-toolkit-wc-get-low-stock-products',
+			'tr-ai-toolkit-wc-list-orders',
+			'tr-ai-toolkit-wc-get-order',
+			'tr-ai-toolkit-wc-update-order-status',
+			'tr-ai-toolkit-wc-list-customers',
+			'tr-ai-toolkit-wc-list-coupons',
+			'tr-ai-toolkit-wc-get-sales-summary',
 		), true );
 	}
 
@@ -789,18 +807,18 @@ class TR_AI_Toolkit_WooCommerce_Module {
 		}
 
 		return match ( $name ) {
-			'tr-ai-toolkit/wc-list-products'       => $this->execute_list_products( $args ),
-			'tr-ai-toolkit/wc-get-product'         => $this->execute_get_product( $args ),
-			'tr-ai-toolkit/wc-search-products'     => $this->execute_search_products( $args ),
-			'tr-ai-toolkit/wc-create-product'      => $this->execute_create_product( $args ),
-			'tr-ai-toolkit/wc-update-product'      => $this->execute_update_product( $args ),
-			'tr-ai-toolkit/wc-get-low-stock-products' => $this->execute_get_low_stock_products( $args ),
-			'tr-ai-toolkit/wc-list-orders'         => $this->execute_list_orders( $args ),
-			'tr-ai-toolkit/wc-get-order'           => $this->execute_get_order( $args ),
-			'tr-ai-toolkit/wc-update-order-status' => $this->execute_update_order_status( $args ),
-			'tr-ai-toolkit/wc-list-customers'      => $this->execute_list_customers( $args ),
-			'tr-ai-toolkit/wc-list-coupons'        => $this->execute_list_coupons( $args ),
-			'tr-ai-toolkit/wc-get-sales-summary'   => $this->execute_get_sales_summary( $args ),
+			'tr-ai-toolkit-wc-list-products'       => $this->execute_list_products( $args ),
+			'tr-ai-toolkit-wc-get-product'         => $this->execute_get_product( $args ),
+			'tr-ai-toolkit-wc-search-products'     => $this->execute_search_products( $args ),
+			'tr-ai-toolkit-wc-create-product'      => $this->execute_create_product( $args ),
+			'tr-ai-toolkit-wc-update-product'      => $this->execute_update_product( $args ),
+			'tr-ai-toolkit-wc-get-low-stock-products' => $this->execute_get_low_stock_products( $args ),
+			'tr-ai-toolkit-wc-list-orders'         => $this->execute_list_orders( $args ),
+			'tr-ai-toolkit-wc-get-order'           => $this->execute_get_order( $args ),
+			'tr-ai-toolkit-wc-update-order-status' => $this->execute_update_order_status( $args ),
+			'tr-ai-toolkit-wc-list-customers'      => $this->execute_list_customers( $args ),
+			'tr-ai-toolkit-wc-list-coupons'        => $this->execute_list_coupons( $args ),
+			'tr-ai-toolkit-wc-get-sales-summary'   => $this->execute_get_sales_summary( $args ),
 			default                                 => new \WP_Error( 'not_found', "Tool '{$name}' not found.", array( 'status' => 404 ) ),
 		};
 	}
@@ -812,7 +830,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 
 		return array(
 			array(
-				'name'        => 'tr-ai-toolkit/wc-list-products',
+				'name'        => 'tr-ai-toolkit-wc-list-products',
 				'description' => 'Returns a paginated list of WooCommerce products. Filters: status, stock_status, category, per_page, page.',
 				'inputSchema' => array( 'type' => 'object', 'properties' => array(
 					'status'       => array( 'type' => 'string' ),
@@ -823,14 +841,14 @@ class TR_AI_Toolkit_WooCommerce_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/wc-get-product',
+				'name'        => 'tr-ai-toolkit-wc-get-product',
 				'description' => 'Returns full details for a single WooCommerce product by ID.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'product_id' ), 'properties' => array(
 					'product_id' => array( 'type' => 'integer' ),
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/wc-search-products',
+				'name'        => 'tr-ai-toolkit-wc-search-products',
 				'description' => 'Searches WooCommerce products by name or SKU.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 's' ), 'properties' => array(
 					's'        => array( 'type' => 'string' ),
@@ -838,7 +856,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/wc-create-product',
+				'name'        => 'tr-ai-toolkit-wc-create-product',
 				'description' => 'Creates a new simple WooCommerce product. Defaults to draft status.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'name' ), 'properties' => array(
 					'name'              => array( 'type' => 'string' ),
@@ -852,7 +870,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/wc-update-product',
+				'name'        => 'tr-ai-toolkit-wc-update-product',
 				'description' => 'Updates an existing WooCommerce product — name, price, stock or status.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'product_id' ), 'properties' => array(
 					'product_id'        => array( 'type' => 'integer' ),
@@ -865,7 +883,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/wc-get-low-stock-products',
+				'name'        => 'tr-ai-toolkit-wc-get-low-stock-products',
 				'description' => 'Returns products that are out of stock or on backorder.',
 				'inputSchema' => array( 'type' => 'object', 'properties' => array(
 					'stock_status' => array( 'type' => 'string' ),
@@ -873,7 +891,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/wc-list-orders',
+				'name'        => 'tr-ai-toolkit-wc-list-orders',
 				'description' => 'Returns a paginated list of WooCommerce orders with optional status filter.',
 				'inputSchema' => array( 'type' => 'object', 'properties' => array(
 					'status'   => array( 'type' => 'string' ),
@@ -882,14 +900,14 @@ class TR_AI_Toolkit_WooCommerce_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/wc-get-order',
+				'name'        => 'tr-ai-toolkit-wc-get-order',
 				'description' => 'Returns full details for a single WooCommerce order including line items.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'order_id' ), 'properties' => array(
 					'order_id' => array( 'type' => 'integer' ),
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/wc-update-order-status',
+				'name'        => 'tr-ai-toolkit-wc-update-order-status',
 				'description' => 'Updates the status of a WooCommerce order.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'order_id', 'status' ), 'properties' => array(
 					'order_id' => array( 'type' => 'integer' ),
@@ -898,7 +916,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/wc-list-customers',
+				'name'        => 'tr-ai-toolkit-wc-list-customers',
 				'description' => 'Returns a paginated list of WooCommerce customers with order count and total spent.',
 				'inputSchema' => array( 'type' => 'object', 'properties' => array(
 					'search'   => array( 'type' => 'string' ),
@@ -907,7 +925,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/wc-list-coupons',
+				'name'        => 'tr-ai-toolkit-wc-list-coupons',
 				'description' => 'Returns WooCommerce coupons with discount type, usage count and expiry.',
 				'inputSchema' => array( 'type' => 'object', 'properties' => array(
 					'per_page' => array( 'type' => 'integer' ),
@@ -915,7 +933,7 @@ class TR_AI_Toolkit_WooCommerce_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/wc-get-sales-summary',
+				'name'        => 'tr-ai-toolkit-wc-get-sales-summary',
 				'description' => 'Returns WooCommerce sales summary: revenue, order counts by status. Period: today, week, month (default), year.',
 				'inputSchema' => array( 'type' => 'object', 'properties' => array(
 					'period' => array( 'type' => 'string' ),

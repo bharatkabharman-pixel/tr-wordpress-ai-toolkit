@@ -82,6 +82,16 @@ class TR_AI_Toolkit_Logger {
 	}
 
 	/**
+	 * Deletes all log entries and returns the count removed.
+	 */
+	public function clear_all(): int {
+		global $wpdb;
+		$table  = $wpdb->prefix . 'tr_ai_toolkit_logs';
+		$result = $wpdb->query( "DELETE FROM `{$table}`" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		return ( false === $result ) ? 0 : (int) $result;
+	}
+
+	/**
 	 * Deletes log entries older than the configured retention period.
 	 */
 	public function prune(): void {

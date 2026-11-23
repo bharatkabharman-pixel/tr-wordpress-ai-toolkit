@@ -36,6 +36,7 @@ defined( 'ABSPATH' ) || exit;
 							<input type="checkbox" name="plugin_enabled" value="1" <?php checked( $settings->get( 'general.plugin_enabled', true ) ); ?>>
 							<?php esc_html_e( 'Register abilities and expose them via MCP', 'tr-wordpress-ai-toolkit' ); ?>
 						</label>
+						<p class="description"><?php esc_html_e( 'Uncheck to disable all MCP tools without deactivating the plugin. Useful during maintenance.', 'tr-wordpress-ai-toolkit' ); ?></p>
 					</td>
 				</tr>
 				<tr>
@@ -46,6 +47,7 @@ defined( 'ABSPATH' ) || exit;
 							<option value="warn"  <?php selected( $settings->get( 'general.log_level', 'info' ), 'warn' ); ?>><?php esc_html_e( 'Warnings and errors only', 'tr-wordpress-ai-toolkit' ); ?></option>
 							<option value="error" <?php selected( $settings->get( 'general.log_level', 'info' ), 'error' ); ?>><?php esc_html_e( 'Errors only', 'tr-wordpress-ai-toolkit' ); ?></option>
 						</select>
+						<p class="description"><?php esc_html_e( 'Controls which Activity Log entries are stored. "Info" logs every tool call; use "Errors only" on busy sites to reduce log volume.', 'tr-wordpress-ai-toolkit' ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -102,7 +104,10 @@ defined( 'ABSPATH' ) || exit;
 		<!-- Permissions -->
 		<div class="tr-section">
 			<h2><?php esc_html_e( 'Permissions', 'tr-wordpress-ai-toolkit' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'Minimum WordPress capability required for each operation type. These apply in addition to the ability-level permission checks.', 'tr-wordpress-ai-toolkit' ); ?></p>
+			<p class="description">
+				<?php esc_html_e( 'Minimum WordPress capability required for each operation type. These apply in addition to the ability-level permission checks.', 'tr-wordpress-ai-toolkit' ); ?>
+				<?php esc_html_e( 'Raise these if you want to restrict AI access to higher-privilege accounts only.', 'tr-wordpress-ai-toolkit' ); ?>
+			</p>
 			<table class="form-table">
 				<?php
 				$cap_options = array(
@@ -152,6 +157,7 @@ defined( 'ABSPATH' ) || exit;
 					<td>
 						<input type="number" name="retention_days" value="<?php echo esc_attr( $settings->get( 'logging.retention_days', 30 ) ); ?>" min="1" max="365" class="small-text">
 						<?php esc_html_e( 'days', 'tr-wordpress-ai-toolkit' ); ?>
+						<p class="description"><?php esc_html_e( 'Log entries older than this are pruned automatically on each request. Max 365 days.', 'tr-wordpress-ai-toolkit' ); ?></p>
 					</td>
 				</tr>
 			</table>

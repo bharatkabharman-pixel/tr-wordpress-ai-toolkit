@@ -43,7 +43,7 @@ class ContentModuleTest extends WP_UnitTestCase {
 		$module = new TR_AI_Toolkit_Content_Module( $this->permissions, $this->logger );
 		$module->register();
 
-		$result = $this->invoke_ability( 'tr-ai-toolkit/list-posts', array() );
+		$result = $this->invoke_ability( 'tr-ai-toolkit-list-posts', array() );
 
 		$this->assertArrayHasKey( 'posts', $result );
 		$this->assertArrayHasKey( 'total', $result );
@@ -56,7 +56,7 @@ class ContentModuleTest extends WP_UnitTestCase {
 		$module = new TR_AI_Toolkit_Content_Module( $this->permissions, $this->logger );
 		$module->register();
 
-		$result = $this->invoke_ability( 'tr-ai-toolkit/list-posts', array( 'per_page' => 2 ) );
+		$result = $this->invoke_ability( 'tr-ai-toolkit-list-posts', array( 'per_page' => 2 ) );
 
 		$this->assertCount( 2, $result['posts'] );
 		$this->assertSame( 2, $result['per_page'] );
@@ -70,7 +70,7 @@ class ContentModuleTest extends WP_UnitTestCase {
 		$module->register();
 
 		// Without capability, drafts should fall back to publish scope.
-		$result = $this->invoke_ability( 'tr-ai-toolkit/list-posts', array( 'status' => 'draft' ) );
+		$result = $this->invoke_ability( 'tr-ai-toolkit-list-posts', array( 'status' => 'draft' ) );
 
 		// Because the user has no capability, the ability should deny or return publish.
 		$this->assertFalse( current_user_can( 'edit_posts' ) );
@@ -84,7 +84,7 @@ class ContentModuleTest extends WP_UnitTestCase {
 		$module = new TR_AI_Toolkit_Content_Module( $this->permissions, $this->logger );
 		$module->register();
 
-		$result = $this->invoke_ability( 'tr-ai-toolkit/create-post', array(
+		$result = $this->invoke_ability( 'tr-ai-toolkit-create-post', array(
 			'title'   => 'Test Post',
 			'content' => 'Hello world.',
 		) );
@@ -98,7 +98,7 @@ class ContentModuleTest extends WP_UnitTestCase {
 		$module = new TR_AI_Toolkit_Content_Module( $this->permissions, $this->logger );
 		$module->register();
 
-		$result = $this->invoke_ability( 'tr-ai-toolkit/create-post', array() );
+		$result = $this->invoke_ability( 'tr-ai-toolkit-create-post', array() );
 
 		$this->assertInstanceOf( WP_Error::class, $result );
 	}
@@ -109,7 +109,7 @@ class ContentModuleTest extends WP_UnitTestCase {
 		$module = new TR_AI_Toolkit_Content_Module( $this->permissions, $this->logger );
 		$module->register();
 
-		$ability = WP_Ability_Registry::instance()->get( 'tr-ai-toolkit/create-post' );
+		$ability = WP_Ability_Registry::instance()->get( 'tr-ai-toolkit-create-post' );
 		$this->assertNotNull( $ability );
 
 		$permitted = call_user_func( $ability->get_permission_callback() );
@@ -130,7 +130,7 @@ class ContentModuleTest extends WP_UnitTestCase {
 		$module = new TR_AI_Toolkit_Content_Module( $this->permissions, $this->logger );
 		$module->register();
 
-		$result = $this->invoke_ability( 'tr-ai-toolkit/get-post', array( 'post_id' => $post_id ) );
+		$result = $this->invoke_ability( 'tr-ai-toolkit-get-post', array( 'post_id' => $post_id ) );
 
 		$this->assertSame( $post_id, $result['id'] );
 		$this->assertSame( 'My Test Post', $result['title'] );
@@ -141,7 +141,7 @@ class ContentModuleTest extends WP_UnitTestCase {
 		$module = new TR_AI_Toolkit_Content_Module( $this->permissions, $this->logger );
 		$module->register();
 
-		$result = $this->invoke_ability( 'tr-ai-toolkit/get-post', array( 'post_id' => 999999 ) );
+		$result = $this->invoke_ability( 'tr-ai-toolkit-get-post', array( 'post_id' => 999999 ) );
 
 		$this->assertInstanceOf( WP_Error::class, $result );
 	}
@@ -156,7 +156,7 @@ class ContentModuleTest extends WP_UnitTestCase {
 		$module = new TR_AI_Toolkit_Content_Module( $this->permissions, $this->logger );
 		$module->register();
 
-		$result = $this->invoke_ability( 'tr-ai-toolkit/delete-post', array( 'post_id' => $post_id ) );
+		$result = $this->invoke_ability( 'tr-ai-toolkit-delete-post', array( 'post_id' => $post_id ) );
 
 		$this->assertSame( 'trash', $result['status'] );
 		$this->assertSame( 'trash', get_post_status( $post_id ) );

@@ -304,20 +304,32 @@ class TR_AI_Toolkit_Media_Module {
 
 	/** @param array<string, mixed> $input */
 	private function execute_find_unused_media( array $input ): array {
+		global $wpdb;
+
 		$per_page = min( 100, max( 1, (int) ( $input['per_page'] ?? 20 ) ) );
+
+		// Collect attachment IDs currently used as featured images anywhere on the site.
+		// _thumbnail_id is stored as postmeta on the POST that uses the image, not on the
+		// attachment itself — so we cannot use a WP_Query meta_query on the attachment.
+		$used_as_featured = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"SELECT DISTINCT CAST(meta_value AS UNSIGNED) FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value != ''",
+				'_thumbnail_id'
+			)
+		);
+
+		$used_as_featured = array_map( 'absint', (array) $used_as_featured );
 
 		$args = array(
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
-			'post_parent'    => 0,
+			'post_parent'    => 0,            // Not inserted via a specific post's upload
 			'posts_per_page' => $per_page,
-			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				array(
-					'key'     => '_thumbnail_id',
-					'compare' => 'NOT EXISTS',
-				),
-			),
 		);
+
+		if ( ! empty( $used_as_featured ) ) {
+			$args['post__not_in'] = $used_as_featured;
+		}
 
 		if ( ! empty( $input['mime_type'] ) ) {
 			$args['post_mime_type'] = sanitize_text_field( $input['mime_type'] );
@@ -341,7 +353,7 @@ class TR_AI_Toolkit_Media_Module {
 		return array(
 			'items' => $items,
 			'total' => (int) $query->found_posts,
-			'note'  => __( 'These attachments have no parent post. Review before deleting.', 'tr-wordpress-ai-toolkit' ),
+			'note'  => 'These attachments have no parent post and are not set as featured images. They may still be used in post content. Review before deleting.',
 		);
 	}
 

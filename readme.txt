@@ -4,7 +4,7 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.2.2
+Stable tag: 1.3.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,9 +52,14 @@ Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your Word
 
 **Manual Credentials Encoder** — Enter a username and Application Password directly in the admin — the plugin computes the base64 Authorization header and full configuration JSON for you.
 
+**Activity Log with Filter and Clear** — Filter log entries by ability name or status (success / denied / error) in real time. Clear all entries with one click.
+
+**Test MCP Connection** — Verify the MCP server is reachable from the Connection Guide admin page without leaving WordPress.
+
 **Security built in:**
 
 * Every tool has a WordPress capability check in its `permission_callback`
+* MCP sessions are bound to the creating user — cross-user session deletion is blocked
 * Write operations require `edit_posts` or `upload_files`
 * Admin operations require `manage_options`
 * All inputs are validated and sanitized using WordPress APIs
@@ -131,6 +136,21 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 
 == Changelog ==
 
+= 1.3.0 — 2026-11-23 =
+* Security: Fixed critical session hijacking vulnerability — any authenticated user could delete another user's MCP session. Sessions are now bound to the creating user; deletion verifies ownership.
+* Fixed: `find-unused-media` always returned empty — wrong meta_query was checking `_thumbnail_id` on the attachment instead of on posts. Fixed with correct SQL query.
+* Fixed: WooCommerce product listing called `wc_get_products(limit=-1)` twice; count always returned 1 due to int cast on array. Fixed with single count query.
+* Fixed: CPT custom field values containing arrays were corrupted to string "Array" by `sanitize_text_field`. New recursive sanitizer preserves arrays, booleans and numbers.
+* Fixed: SEO `find-missing-meta` pagination was inconsistent — fetched too many rows in PHP then filtered. Rewritten using database-level meta_query with proper paged support.
+* Fixed: WooCommerce, Comments and CPT module tool names still used forward slashes (`tr-ai-toolkit/toolname`). All renamed to hyphen format (`tr-ai-toolkit-toolname`). All 58 tools now have valid MCP identifiers.
+* Fixed: `max_execution_time = -1` now shows as `unlimited` instead of raw `-1`.
+* Fixed: WooCommerce email masking format normalized to `***@domain.com` to match all other modules.
+* Added: Activity Log filter bar — search by ability name, filter by status (success/denied/error), live row count.
+* Added: Clear All Logs button with confirmation dialog on the Activity Log page.
+* Added: Test MCP Connection section on Connection Guide — fires internal ping and shows pass/fail.
+* Added: Helpful description text under Enable Plugin, Log Level, Permissions and Log Retention settings.
+* Added: 8 new documentation files (CONNECTION_GUIDE, CLAUDE_DESKTOP, CLAUDE_CODE, MCP_PROTOCOL, AVAILABLE_TOOLS, PERMISSIONS, TROUBLESHOOTING, SECURITY_REVIEW).
+
 = 1.2.2 — 2026-11-21 =
 * Fixed: All original module tools (Content, Media, SEO, Health, Users) were not callable from Claude.ai — tool names contained forward slashes which are not valid MCP identifiers. Renamed from `tr-ai-toolkit/toolname` to `tr-ai-toolkit-toolname`. WooCommerce, Comments and CPT modules were already using valid names and are unaffected.
 * Fixed: PHP bug in abilities manager where `$module_map` was referenced before it was defined.
@@ -169,6 +189,9 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 * Full audit logging with configurable retention.
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Security update + 7 bug fixes. Fixes a critical vulnerability where any authenticated user could delete another user's MCP session. Also fixes find-unused-media returning empty, CPT custom field corruption, WooCommerce double query, and SEO pagination. All 58 tools now have valid MCP identifiers. Upgrade recommended for all users.
 
 = 1.2.2 =
 Critical fix: original module tools (Content, Media, SEO, Health, Users) could not be called from Claude.ai due to invalid slashes in tool names. Upgrade immediately if you are on v1.2.1 or earlier.

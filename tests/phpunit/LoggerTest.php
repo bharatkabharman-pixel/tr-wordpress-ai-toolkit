@@ -20,7 +20,7 @@ class LoggerTest extends WP_UnitTestCase {
 	public function test_log_writes_row(): void {
 		global $wpdb;
 
-		$this->logger->log( 'tr-ai-toolkit/list-posts', array( 'per_page' => 10 ), TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-list-posts', array( 'per_page' => 10 ), TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		$table = $wpdb->prefix . 'tr_ai_toolkit_logs';
 		$count = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
@@ -33,7 +33,7 @@ class LoggerTest extends WP_UnitTestCase {
 
 		$this->settings->update_group( 'logging', array( 'enabled' => false ) );
 		$logger = new TR_AI_Toolkit_Logger( $this->settings );
-		$logger->log( 'tr-ai-toolkit/list-posts', array(), TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$logger->log( 'tr-ai-toolkit-list-posts', array(), TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		$table = $wpdb->prefix . 'tr_ai_toolkit_logs';
 		$count = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
@@ -59,12 +59,32 @@ class LoggerTest extends WP_UnitTestCase {
 	}
 
 	public function test_get_recent_returns_array(): void {
-		$this->logger->log( 'tr-ai-toolkit/test', array(), TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-test', array(), TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		$rows = $this->logger->get_recent( 10 );
 
 		$this->assertIsArray( $rows );
 		$this->assertGreaterThanOrEqual( 1, count( $rows ) );
+	}
+
+	public function test_clear_all_deletes_all_rows(): void {
+		global $wpdb;
+
+		$this->logger->log( 'tr-ai-toolkit-list-posts', array(), TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-post', array( 'post_id' => 1 ), TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+
+		$deleted = $this->logger->clear_all();
+
+		$this->assertGreaterThanOrEqual( 2, $deleted );
+
+		$table = $wpdb->prefix . 'tr_ai_toolkit_logs';
+		$count = $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
+		$this->assertSame( '0', $count );
+	}
+
+	public function test_clear_all_returns_zero_when_table_empty(): void {
+		$deleted = $this->logger->clear_all();
+		$this->assertSame( 0, $deleted );
 	}
 
 	public function test_prune_removes_old_entries(): void {

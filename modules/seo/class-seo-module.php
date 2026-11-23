@@ -153,50 +153,58 @@ class TR_AI_Toolkit_SEO_Module {
 			? ( $input['post_type'] ?? 'post' )
 			: 'post';
 		$per_page  = min( 100, max( 1, (int) ( $input['per_page'] ?? 20 ) ) );
+		$page      = max( 1, (int) ( $input['page'] ?? 1 ) );
 
-		$query = new \WP_Query( array(
+		// Build a meta_query that selects posts where ALL known SEO plugin
+		// meta keys are either absent or empty. This runs the filter at the
+		// database level, making pagination consistent.
+		$meta_keys  = $this->get_meta_keys_for( $type );
+		$meta_query = array( 'relation' => 'AND' );
+
+		foreach ( $meta_keys as $key ) {
+			$meta_query[] = array(
+				'relation' => 'OR',
+				array( 'key' => $key, 'compare' => 'NOT EXISTS' ),
+				array( 'key' => $key, 'value' => '', 'compare' => '=' ),
+			);
+		}
+
+		$query_args = array(
 			'post_type'      => 'any' === $post_type ? array( 'post', 'page' ) : $post_type,
 			'post_status'    => 'publish',
-			'posts_per_page' => $per_page * 3, // Fetch more since we filter in PHP.
+			'posts_per_page' => $per_page,
+			'paged'          => $page,
 			'fields'         => 'ids',
-		) );
+		);
 
+		if ( count( $meta_keys ) > 0 ) {
+			$query_args['meta_query'] = $meta_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		}
+
+		$query   = new \WP_Query( $query_args );
 		$missing = array();
-		$meta_keys = $this->get_meta_keys_for( $type );
 
 		foreach ( $query->posts as $post_id ) {
-			$has_meta = false;
-			foreach ( $meta_keys as $key ) {
-				$value = get_post_meta( $post_id, $key, true );
-				if ( ! empty( $value ) ) {
-					$has_meta = true;
-					break;
-				}
-			}
-
-			if ( ! $has_meta ) {
-				$post     = get_post( $post_id );
-				$missing[] = array(
-					'id'        => $post_id,
-					'title'     => $post ? $post->post_title : '',
-					'url'       => get_permalink( $post_id ),
-					'edit_url'  => get_edit_post_link( $post_id, 'raw' ),
-					'post_type' => $post ? $post->post_type : '',
-				);
-
-				if ( count( $missing ) >= $per_page ) {
-					break;
-				}
-			}
+			$post      = get_post( $post_id );
+			$missing[] = array(
+				'id'        => $post_id,
+				'title'     => $post ? $post->post_title : '',
+				'url'       => get_permalink( $post_id ),
+				'edit_url'  => get_edit_post_link( $post_id, 'raw' ),
+				'post_type' => $post ? $post->post_type : '',
+			);
 		}
 
 		$ability = 'tr-ai-toolkit-find-missing-meta-' . ( 'title' === $type ? 'titles' : 'descriptions' );
 		$this->logger->log( $ability, $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 
 		return array(
-			'missing' => $missing,
-			'count'   => count( $missing ),
-			'type'    => $type,
+			'missing'      => $missing,
+			'count'        => count( $missing ),
+			'total_pages'  => (int) $query->max_num_pages,
+			'page'         => $page,
+			'per_page'     => $per_page,
+			'type'         => $type,
 		);
 	}
 

@@ -315,6 +315,157 @@
 	});
 
 	// -------------------------------------------------------------------------
+	// Test MCP Connection
+	// -------------------------------------------------------------------------
+	document.addEventListener('DOMContentLoaded', function () {
+		var testBtn     = document.getElementById('tr-test-connection-btn');
+		var testSpinner = document.getElementById('tr-test-spinner');
+		var testResult  = document.getElementById('tr-test-result');
+		if (!testBtn) return;
+
+		testBtn.addEventListener('click', function () {
+			testBtn.disabled = true;
+			testBtn.textContent = trAIToolkit.strings.testingConnection;
+			if (testSpinner) testSpinner.style.display = 'inline-block';
+			if (testResult)  testResult.style.display  = 'none';
+
+			var fd = new FormData();
+			fd.append('action', 'tr_ai_toolkit_test_connection');
+			fd.append('nonce',  trAIToolkit.nonce);
+
+			fetch(trAIToolkit.ajaxUrl, { method: 'POST', body: fd })
+				.then(function (r) { return r.json(); })
+				.then(function (res) {
+					testBtn.disabled    = false;
+					testBtn.textContent = trAIToolkit.strings.testConnection;
+					if (testSpinner) testSpinner.style.display = 'none';
+					if (!testResult) return;
+
+					if (res.success) {
+						testResult.className = 'notice notice-success inline';
+						testResult.innerHTML = '<p><strong>&#10003; ' + escapeHtml(res.data.message) + '</strong></p>';
+					} else {
+						testResult.className = 'notice notice-error inline';
+						testResult.innerHTML = '<p><strong>&#10007; ' + escapeHtml(res.data ? res.data.message : trAIToolkit.strings.ajaxError) + '</strong></p>';
+					}
+					testResult.style.display = 'block';
+				})
+				.catch(function () {
+					testBtn.disabled    = false;
+					testBtn.textContent = trAIToolkit.strings.testConnection;
+					if (testSpinner) testSpinner.style.display = 'none';
+					if (testResult) {
+						testResult.className = 'notice notice-error inline';
+						testResult.innerHTML = '<p>' + escapeHtml(trAIToolkit.strings.ajaxError) + '</p>';
+						testResult.style.display = 'block';
+					}
+				});
+		});
+	});
+
+	// -------------------------------------------------------------------------
+	// Activity Log — client-side filter and clear
+	// -------------------------------------------------------------------------
+	document.addEventListener('DOMContentLoaded', function () {
+		var searchInput  = document.getElementById('tr-log-search');
+		var statusSelect = document.getElementById('tr-log-status-filter');
+		var logTable     = document.getElementById('tr-log-table');
+		var noResults    = document.getElementById('tr-log-no-results');
+		var countBadge   = document.getElementById('tr-log-count');
+		var clearBtn     = document.getElementById('tr-clear-logs-btn');
+		var clearNotice  = document.getElementById('tr-clear-logs-notice');
+
+		function updateCount(visible, total) {
+			if (!countBadge) return;
+			if (visible === total) {
+				countBadge.textContent = total + ' entries';
+			} else {
+				countBadge.textContent = visible + ' of ' + total + ' shown';
+			}
+		}
+
+		function applyFilters() {
+			if (!logTable) return;
+			var rows    = logTable.querySelectorAll('tbody tr');
+			var search  = searchInput  ? searchInput.value.toLowerCase().trim()  : '';
+			var status  = statusSelect ? statusSelect.value : '';
+			var total   = rows.length;
+			var visible = 0;
+
+			rows.forEach(function (row) {
+				var ability    = row.getAttribute('data-ability') || '';
+				var rowStatus  = row.getAttribute('data-status')  || '';
+				var matchText  = !search || ability.indexOf(search) !== -1;
+				var matchStat  = !status || rowStatus === status;
+
+				if (matchText && matchStat) {
+					row.style.display = '';
+					visible++;
+				} else {
+					row.style.display = 'none';
+				}
+			});
+
+			updateCount(visible, total);
+			if (noResults) noResults.style.display = visible === 0 ? 'block' : 'none';
+		}
+
+		if (searchInput)  searchInput.addEventListener('input',  applyFilters);
+		if (statusSelect) statusSelect.addEventListener('change', applyFilters);
+
+		// Initialize count
+		if (logTable) {
+			var allRows = logTable.querySelectorAll('tbody tr');
+			updateCount(allRows.length, allRows.length);
+		}
+
+		// Clear logs
+		if (clearBtn) {
+			clearBtn.addEventListener('click', function () {
+				if (!confirm(trAIToolkit.strings.clearLogsConfirm)) return;
+
+				clearBtn.disabled     = true;
+				clearBtn.textContent  = trAIToolkit.strings.clearing;
+
+				var fd = new FormData();
+				fd.append('action', 'tr_ai_toolkit_clear_logs');
+				fd.append('nonce',  trAIToolkit.nonce);
+
+				fetch(trAIToolkit.ajaxUrl, { method: 'POST', body: fd })
+					.then(function (r) { return r.json(); })
+					.then(function (res) {
+						clearBtn.disabled = false;
+						clearBtn.textContent = trAIToolkit.strings.clearLogs;
+
+						if (!clearNotice) return;
+
+						if (res.success) {
+							// Hide the table and show cleared message.
+							if (logTable) logTable.style.display = 'none';
+							if (noResults) noResults.style.display = 'none';
+							if (countBadge) countBadge.textContent = '';
+							clearNotice.className = 'notice notice-success inline';
+							clearNotice.innerHTML = '<p>' + escapeHtml(res.data.message) + '</p>';
+						} else {
+							clearNotice.className = 'notice notice-error inline';
+							clearNotice.innerHTML = '<p>' + escapeHtml(res.data ? res.data.message : trAIToolkit.strings.ajaxError) + '</p>';
+						}
+						clearNotice.style.display = 'block';
+					})
+					.catch(function () {
+						clearBtn.disabled    = false;
+						clearBtn.textContent = trAIToolkit.strings.clearLogs;
+						if (clearNotice) {
+							clearNotice.className = 'notice notice-error inline';
+							clearNotice.innerHTML = '<p>' + escapeHtml(trAIToolkit.strings.ajaxError) + '</p>';
+							clearNotice.style.display = 'block';
+						}
+					});
+			});
+		}
+	});
+
+	// -------------------------------------------------------------------------
 	// Auto-dismiss admin notices after 5 seconds
 	// -------------------------------------------------------------------------
 	document.addEventListener('DOMContentLoaded', function () {
