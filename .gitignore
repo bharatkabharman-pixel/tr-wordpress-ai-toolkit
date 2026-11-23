@@ -29,3 +29,6 @@ desktop.ini
 # Environment
 .env
 .env.*
+
+# Claude Code
+.claude/
