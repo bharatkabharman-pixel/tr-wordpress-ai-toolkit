@@ -2,7 +2,7 @@
 
 > Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site — manage content, media, SEO and site health using natural language.
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/bharatkabharman-pixel/tr-wordpress-ai-toolkit/releases)
+[![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)](https://github.com/bharatkabharman-pixel/tr-wordpress-ai-toolkit/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.9%2B-21759b.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777bb4.svg)](https://php.net)
 [![License](https://img.shields.io/badge/license-GPL--2.0--or--later-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -11,7 +11,7 @@
 
 ## What It Does
 
-TR WordPress AI Toolkit gives AI assistants direct access to your WordPress site through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io). The plugin exposes **35 tools** across five modules — Content, Media, SEO, Health and Users — all secured by WordPress capability checks.
+TR WordPress AI Toolkit gives AI assistants direct access to your WordPress site through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io). The plugin exposes **58 tools** across eight modules — Content, Media, SEO, Health, Users, WooCommerce, Comments and Custom Post Types — all secured by WordPress capability checks.
 
 Once connected, you manage your site in plain English:
 
@@ -26,7 +26,7 @@ Once connected, you manage your site in plain English:
 "What is the current PHP version and memory limit?"
 ```
 
-**Compatible clients:** Claude.ai Projects, Claude Desktop, Cursor, Windsurf, Codeium, and any MCP 2025-11-25 / 2026-07-28 compliant client.
+**Compatible clients:** Claude.ai Projects, Claude Desktop, Cursor, Windsurf, Codeium, and any MCP 2025-03-26 compliant client.
 
 ---
 
@@ -53,7 +53,7 @@ Once connected, you manage your site in plain English:
 Generate an Application Password and a ready-to-paste Claude.ai / Claude Desktop configuration in one click — no manual credential setup.
 
 ### Built-in MCP Server
-The plugin ships its own MCP endpoint at `/wp-json/tr-ai-toolkit/mcp`. No separate protocol plugin required. Supports both **Streamable HTTP** (MCP 2025-11-25 and 2026-07-28) and **STDIO** transports.
+The plugin ships its own MCP endpoint at `/wp-json/tr-ai-toolkit/mcp`. No separate protocol plugin required. Supports both **Streamable HTTP** (MCP 2025-03-26) and **STDIO** transports.
 
 ### 42-Prompt Library
 A categorized library of 42 ready-to-use prompts for Claude.ai — covering Content, SEO, Media, Site Health, Users, WooCommerce, Comments, Custom Post Types and Power Prompts. Copy any prompt with one click.
@@ -148,7 +148,7 @@ The plugin uses **WordPress Application Passwords** (built into WordPress 5.6+).
 
 ## Prompt Library
 
-The admin includes a **Prompt Library** with 25 curated prompts across six categories:
+The admin includes a **Prompt Library** with 42 curated prompts across nine categories:
 
 | Category | Count | Example Prompt |
 |----------|-------|----------------|
@@ -168,111 +168,111 @@ Access it via **TR AI Toolkit → Prompt Library** in the WordPress admin.
 
 ## Tools Reference
 
+For the full 58-tool reference with parameters and capability requirements, see [docs/AVAILABLE_TOOLS.md](docs/AVAILABLE_TOOLS.md).
+
 ### Content (14 tools)
 
 | Tool | Description | Capability |
 |------|-------------|------------|
-| `tr-ai-toolkit/list-posts` | Paginated posts with status/category/date filters | `read` |
-| `tr-ai-toolkit/get-post` | Full post details including meta and taxonomy | `read` |
-| `tr-ai-toolkit/search-posts` | Full-text search across posts | `read` |
-| `tr-ai-toolkit/create-post` | Create a post (defaults to draft) | `edit_posts` |
-| `tr-ai-toolkit/update-post` | Partial update — title, content, status, meta | `edit_posts` |
-| `tr-ai-toolkit/delete-post` | Move post to trash (no permanent deletion) | `edit_posts` |
-| `tr-ai-toolkit/list-pages` | Paginated pages list | `read` |
-| `tr-ai-toolkit/get-page` | Full page details | `read` |
-| `tr-ai-toolkit/create-page` | Create a page (defaults to draft) | `edit_posts` |
-| `tr-ai-toolkit/update-page` | Partial update for pages | `edit_posts` |
-| `tr-ai-toolkit/list-categories` | All post categories with counts | `read` |
-| `tr-ai-toolkit/create-category` | Create a category | `edit_posts` |
-| `tr-ai-toolkit/list-tags` | All post tags with counts | `read` |
-| `tr-ai-toolkit/create-tag` | Create a tag | `edit_posts` |
+| `tr-ai-toolkit-list-posts` | Paginated posts with status/category/date filters | `read` |
+| `tr-ai-toolkit-get-post` | Full post details including meta and taxonomy | `read` |
+| `tr-ai-toolkit-search-content` | Full-text search across posts and pages | `read` |
+| `tr-ai-toolkit-create-post` | Create a post (defaults to draft) | `edit_posts` |
+| `tr-ai-toolkit-update-post` | Partial update — title, content, status, meta | `edit_posts` |
+| `tr-ai-toolkit-delete-post` | Move post to trash | `delete_posts` |
+| `tr-ai-toolkit-list-categories` | All post categories with counts | `read` |
+| `tr-ai-toolkit-get-category` | Single category details | `read` |
+| `tr-ai-toolkit-create-category` | Create a category | `edit_posts` |
+| `tr-ai-toolkit-list-tags` | All post tags with counts | `read` |
+| `tr-ai-toolkit-get-tag` | Single tag details | `read` |
+| `tr-ai-toolkit-create-tag` | Create a tag | `edit_posts` |
+| `tr-ai-toolkit-get-post-revisions` | Revisions list for a post | `edit_posts` |
+| `tr-ai-toolkit-get-post-meta` | All custom fields for a post | `read` |
 
 ### Media (5 tools)
 
 | Tool | Description | Capability |
 |------|-------------|------------|
-| `tr-ai-toolkit/list-media` | Paginated media library | `read` |
-| `tr-ai-toolkit/get-media-details` | Full attachment details with all image sizes | `read` |
-| `tr-ai-toolkit/search-media` | Search media by title or filename | `read` |
-| `tr-ai-toolkit/update-media-metadata` | Update title, alt text, caption, description | `upload_files` |
-| `tr-ai-toolkit/find-unused-media` | Orphaned attachments with no parent post | `upload_files` |
+| `tr-ai-toolkit-list-media` | Paginated media library | `read` |
+| `tr-ai-toolkit-get-media` | Full attachment details with all image sizes | `read` |
+| `tr-ai-toolkit-update-media-metadata` | Update alt text, caption, description | `edit_posts` |
+| `tr-ai-toolkit-find-unused-media` | Attachments not used in any post or as featured image | `read` |
+| `tr-ai-toolkit-delete-media` | Permanently delete a media file | `delete_posts` |
 
 ### SEO (5 tools)
 
 | Tool | Description | Capability |
 |------|-------------|------------|
-| `tr-ai-toolkit/get-seo-summary` | Overall SEO health with score estimate | `read` |
-| `tr-ai-toolkit/find-missing-meta-titles` | Posts without SEO title | `read` |
-| `tr-ai-toolkit/find-missing-meta-descriptions` | Posts without meta description | `read` |
-| `tr-ai-toolkit/find-posts-without-featured-images` | Posts without thumbnail | `read` |
-| `tr-ai-toolkit/analyze-content-structure` | Per-post word count, headings, links, images | `read` |
+| `tr-ai-toolkit-get-seo-overview` | Site-wide SEO health summary | `read` |
+| `tr-ai-toolkit-analyze-post-seo` | Per-post SEO analysis: title, meta, readability | `read` |
+| `tr-ai-toolkit-find-missing-meta` | Posts without SEO title or description | `read` |
+| `tr-ai-toolkit-analyze-readability` | Readability scores for a post | `read` |
+| `tr-ai-toolkit-get-duplicate-titles` | Posts sharing the same title | `read` |
 
-SEO tools automatically detect and read from **Yoast SEO**, **Rank Math** and **All in One SEO Pack**.
+SEO tools automatically detect **Yoast SEO**, **Rank Math** and **All in One SEO Pack**.
 
 ### Health (7 tools)
 
 | Tool | Description | Capability |
 |------|-------------|------------|
-| `tr-ai-toolkit/get-wordpress-info` | WP version, site URL, language, timezone | `manage_options` |
-| `tr-ai-toolkit/get-php-version` | PHP version and loaded extensions | `manage_options` |
-| `tr-ai-toolkit/get-active-plugins` | Active plugins with versions | `manage_options` |
-| `tr-ai-toolkit/get-active-theme` | Active theme and block theme support | `manage_options` |
-| `tr-ai-toolkit/get-site-health-summary` | Post/page counts, memory, HTTPS, debug status | `manage_options` |
-| `tr-ai-toolkit/get-permalink-structure` | Permalink and URL base settings | `manage_options` |
-| `tr-ai-toolkit/get-cron-status` | Scheduled WP-Cron events and overdue count | `manage_options` |
-
-Admin email is masked in all health tool output.
+| `tr-ai-toolkit-get-server-info` | PHP version, memory limit, max execution time | `manage_options` |
+| `tr-ai-toolkit-get-wordpress-info` | WP version, site URL, language, timezone | `manage_options` |
+| `tr-ai-toolkit-list-active-plugins` | Active plugins with versions | `manage_options` |
+| `tr-ai-toolkit-get-database-info` | DB version, table prefix, database size | `manage_options` |
+| `tr-ai-toolkit-check-filesystem` | WordPress directory write permissions | `manage_options` |
+| `tr-ai-toolkit-get-cron-jobs` | Scheduled cron events with next run time | `manage_options` |
+| `tr-ai-toolkit-get-site-health-score` | Site Health critical/recommended issue counts | `manage_options` |
 
 ### Users (4 tools)
 
 | Tool | Description | Capability |
 |------|-------------|------------|
-| `tr-ai-toolkit/list-users` | Paginated user list (email masked) | `list_users` |
-| `tr-ai-toolkit/get-user` | Single user profile (email masked) | `list_users` |
-| `tr-ai-toolkit/search-users` | Search by display name or email | `list_users` |
-| `tr-ai-toolkit/get-user-roles` | All roles with capability summary | `manage_options` |
+| `tr-ai-toolkit-list-users` | Paginated user list (email masked) | `list_users` |
+| `tr-ai-toolkit-get-user` | Single user profile (email masked) | `list_users` |
+| `tr-ai-toolkit-get-user-roles` | All roles with capability summary | `read` |
+| `tr-ai-toolkit-get-current-user` | Current authenticated user's profile | `read` |
 
 ### WooCommerce (12 tools)
 
-> Auto-enabled when WooCommerce is active. Silently skipped when WooCommerce is not installed.
+> Auto-enabled when WooCommerce is active. Silently skipped otherwise.
 
 | Tool | Description | Capability |
 |------|-------------|------------|
-| `tr-ai-toolkit/wc-list-products` | Paginated product list with status/stock/category filters | `read` |
-| `tr-ai-toolkit/wc-get-product` | Full product details | `read` |
-| `tr-ai-toolkit/wc-search-products` | Search products by name or SKU | `read` |
-| `tr-ai-toolkit/wc-create-product` | Create a simple product (defaults to draft) | `edit_products` |
-| `tr-ai-toolkit/wc-update-product` | Update name, price, stock, SKU or status | `edit_products` |
-| `tr-ai-toolkit/wc-get-low-stock-products` | Out of stock / backorder products | `edit_products` |
-| `tr-ai-toolkit/wc-list-orders` | Paginated orders with status filter | `edit_shop_orders` |
-| `tr-ai-toolkit/wc-get-order` | Full order details with line items and billing | `edit_shop_orders` |
-| `tr-ai-toolkit/wc-update-order-status` | Change order status with optional note | `edit_shop_orders` |
-| `tr-ai-toolkit/wc-list-customers` | Customers with order count and total spent (email masked) | `list_users` |
-| `tr-ai-toolkit/wc-list-coupons` | Coupons with discount type, usage count and expiry | `edit_shop_orders` |
-| `tr-ai-toolkit/wc-get-sales-summary` | Revenue and order counts for today / week / month / year | `view_woocommerce_reports` |
+| `tr-ai-toolkit-wc-get-products` | Paginated product list with filters | `read` |
+| `tr-ai-toolkit-wc-get-product` | Full product details | `read` |
+| `tr-ai-toolkit-wc-create-product` | Create a simple product (defaults to draft) | `edit_posts` |
+| `tr-ai-toolkit-wc-update-product` | Update name, price, stock, SKU or status | `edit_posts` |
+| `tr-ai-toolkit-wc-delete-product` | Move product to trash | `delete_posts` |
+| `tr-ai-toolkit-wc-get-orders` | Paginated orders with status filter | `read` |
+| `tr-ai-toolkit-wc-get-order` | Full order details with line items | `read` |
+| `tr-ai-toolkit-wc-get-customers` | Customer list (email masked) | `list_users` |
+| `tr-ai-toolkit-wc-get-customer` | Single customer profile (email masked) | `list_users` |
+| `tr-ai-toolkit-wc-get-coupons` | Coupons with discount type and usage | `manage_options` |
+| `tr-ai-toolkit-wc-get-coupon` | Single coupon details | `manage_options` |
+| `tr-ai-toolkit-wc-get-sales-report` | Revenue and order counts for a date range | `manage_options` |
 
 ### Comments (6 tools)
 
 | Tool | Description | Capability |
 |------|-------------|------------|
-| `tr-ai-toolkit/get-comment-summary` | Counts by status: pending, approved, spam, trash | `moderate_comments` |
-| `tr-ai-toolkit/list-comments` | Paginated list filtered by status and optionally post ID | `moderate_comments` |
-| `tr-ai-toolkit/get-comment` | Full comment details | `moderate_comments` |
-| `tr-ai-toolkit/approve-comment` | Approve a pending comment | `moderate_comments` |
-| `tr-ai-toolkit/trash-comment` | Move comment to trash (no permanent deletion) | `moderate_comments` |
-| `tr-ai-toolkit/reply-to-comment` | Post a reply as the authenticated user | `moderate_comments` |
+| `tr-ai-toolkit-list-comments` | Paginated list filtered by status and post ID | `moderate_comments` |
+| `tr-ai-toolkit-get-comment` | Full comment details | `moderate_comments` |
+| `tr-ai-toolkit-approve-comment` | Approve a pending comment | `moderate_comments` |
+| `tr-ai-toolkit-trash-comment` | Move comment to trash | `moderate_comments` |
+| `tr-ai-toolkit-reply-to-comment` | Post a reply as the authenticated user | `moderate_comments` |
+| `tr-ai-toolkit-delete-comment` | Permanently delete a comment | `moderate_comments` |
 
 ### Custom Post Types (5 tools)
 
-Works with any public CPT registered on the site — portfolio, testimonials, events, team members and more.
+Works with any public CPT — portfolio, testimonials, events, team members and more.
 
 | Tool | Description | Capability |
 |------|-------------|------------|
-| `tr-ai-toolkit/list-post-types` | All public CPTs with labels, archive info and published count | `read` |
-| `tr-ai-toolkit/list-cpt-posts` | Paginated posts for any CPT by slug | `read` |
-| `tr-ai-toolkit/get-cpt-post` | Full post details including all custom fields | `read` |
-| `tr-ai-toolkit/create-cpt-post` | Create a CPT post with custom fields (defaults to draft) | `edit_posts` |
-| `tr-ai-toolkit/update-cpt-post` | Update title, content, status or custom fields | `edit_posts` |
+| `tr-ai-toolkit-cpt-list-types` | All public CPTs with labels and published count | `read` |
+| `tr-ai-toolkit-cpt-list-posts` | Paginated posts for any CPT | `read` |
+| `tr-ai-toolkit-cpt-get-post` | Full post including custom fields | `read` |
+| `tr-ai-toolkit-cpt-create-post` | Create a CPT post with custom fields | `edit_posts` |
+| `tr-ai-toolkit-cpt-update-post` | Update title, content, status or custom fields | `edit_posts` |
 
 ---
 
@@ -348,7 +348,7 @@ tr-wordpress-ai-toolkit/
 │   │   ├── dashboard.php
 │   │   ├── settings.php
 │   │   ├── connect.php              Quick Connect + Manual Encoder
-│   │   ├── prompts.php              Prompt Library (25 prompts)
+│   │   ├── prompts.php              Prompt Library (42 prompts)
 │   │   └── logs.php
 │   ├── css/admin.css
 │   └── js/admin.js
@@ -405,7 +405,7 @@ zip -r tr-wordpress-ai-toolkit.zip . \
 Not for HTTP connections. The plugin has its own built-in MCP server at `/wp-json/tr-ai-toolkit/mcp`. MCP Adapter is only required for STDIO transport (Claude Desktop). It is auto-installed on plugin activation.
 
 **Which AI clients work?**
-Any MCP 2025-11-25 or 2026-07-28 compliant client: Claude.ai Projects, Claude Desktop, Cursor, Windsurf, Codeium and others.
+Any MCP 2025-03-26 compliant client: Claude.ai Projects, Claude Desktop, Cursor, Windsurf, Codeium and others.
 
 **How do I authenticate?**
 WordPress Application Passwords (built into WP 5.6+). Use Quick Connect in the admin to generate one automatically, or create one at Users → Profile → Application Passwords.
