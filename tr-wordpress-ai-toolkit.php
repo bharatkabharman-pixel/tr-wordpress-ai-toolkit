@@ -2,7 +2,7 @@
 /**
  * Plugin Name: TR WordPress AI Toolkit
  * Plugin URI: https://trsoftech.com/tr-wordpress-ai-toolkit
- * Description: Connect AI assistants (Claude, Copilot, and any MCP client) to your WordPress site via the Model Context Protocol. Manage content, media, SEO, and site health using natural language.
+ * Description: Connect AI assistants (Claude, Copilot, and any MCP client) to your WordPress site via the Model Context Protocol. Manage content, media, SEO, users, WooCommerce and site health using natural language. 68 tools across 8 modules.
  * Version: 1.3.0
  * Requires at least: 6.9
  * Requires PHP: 8.1

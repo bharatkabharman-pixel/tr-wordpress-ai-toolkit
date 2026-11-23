@@ -34,7 +34,9 @@ class TR_AI_Toolkit_Comments_Module {
 		$this->register_list_comments();
 		$this->register_get_comment();
 		$this->register_approve_comment();
+		$this->register_unapprove_comment();
 		$this->register_trash_comment();
+		$this->register_spam_comment();
 		$this->register_reply_to_comment();
 	}
 
@@ -228,6 +230,58 @@ class TR_AI_Toolkit_Comments_Module {
 	}
 
 	// -------------------------------------------------------------------------
+	// Unapprove
+	// -------------------------------------------------------------------------
+
+	private function register_unapprove_comment(): void {
+		wp_register_ability(
+			'tr-ai-toolkit-unapprove-comment',
+			array(
+				'label'       => __( 'Unapprove Comment', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Returns an approved comment to pending (hold) status.', 'tr-wordpress-ai-toolkit' ),
+				'category'    => TR_AI_Toolkit_Abilities_Manager::CATEGORY,
+				'input_schema' => array(
+					'type'       => 'object',
+					'required'   => array( 'comment_id' ),
+					'properties' => array(
+						'comment_id' => array( 'type' => 'integer', 'description' => 'Comment ID to unapprove.' ),
+					),
+				),
+				'permission_callback' => function () {
+					return current_user_can( 'moderate_comments' ) ? true : new \WP_Error( 'forbidden', 'Insufficient permissions.', array( 'status' => 403 ) );
+				},
+				'execute_callback' => function ( array $input ) {
+					return $this->execute_unapprove_comment( $input );
+				},
+				'meta' => array( 'mcp' => array( 'public' => true ) ),
+			)
+		);
+	}
+
+	private function execute_unapprove_comment( array $input ): array|\WP_Error {
+		$comment_id = (int) ( $input['comment_id'] ?? 0 );
+		$comment    = get_comment( $comment_id );
+
+		if ( ! $comment ) {
+			return new \WP_Error( 'not_found', 'Comment not found.', array( 'status' => 404 ) );
+		}
+
+		$result = wp_set_comment_status( $comment_id, 'hold' );
+
+		if ( ! $result ) {
+			$this->logger->log( 'tr-ai-toolkit-unapprove-comment', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, 'wp_set_comment_status failed' );
+			return new \WP_Error( 'unapprove_failed', 'Failed to unapprove comment.', array( 'status' => 500 ) );
+		}
+
+		$this->logger->log( 'tr-ai-toolkit-unapprove-comment', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		return array(
+			'comment_id' => $comment_id,
+			'status'     => 'hold',
+			'unapproved' => true,
+		);
+	}
+
+	// -------------------------------------------------------------------------
 	// Trash
 	// -------------------------------------------------------------------------
 
@@ -276,6 +330,58 @@ class TR_AI_Toolkit_Comments_Module {
 			'comment_id' => $comment_id,
 			'status'     => 'trash',
 			'trashed'    => true,
+		);
+	}
+
+	// -------------------------------------------------------------------------
+	// Spam
+	// -------------------------------------------------------------------------
+
+	private function register_spam_comment(): void {
+		wp_register_ability(
+			'tr-ai-toolkit-spam-comment',
+			array(
+				'label'       => __( 'Spam Comment', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Marks a comment as spam.', 'tr-wordpress-ai-toolkit' ),
+				'category'    => TR_AI_Toolkit_Abilities_Manager::CATEGORY,
+				'input_schema' => array(
+					'type'       => 'object',
+					'required'   => array( 'comment_id' ),
+					'properties' => array(
+						'comment_id' => array( 'type' => 'integer', 'description' => 'Comment ID to mark as spam.' ),
+					),
+				),
+				'permission_callback' => function () {
+					return current_user_can( 'moderate_comments' ) ? true : new \WP_Error( 'forbidden', 'Insufficient permissions.', array( 'status' => 403 ) );
+				},
+				'execute_callback' => function ( array $input ) {
+					return $this->execute_spam_comment( $input );
+				},
+				'meta' => array( 'mcp' => array( 'public' => true ) ),
+			)
+		);
+	}
+
+	private function execute_spam_comment( array $input ): array|\WP_Error {
+		$comment_id = (int) ( $input['comment_id'] ?? 0 );
+		$comment    = get_comment( $comment_id );
+
+		if ( ! $comment ) {
+			return new \WP_Error( 'not_found', 'Comment not found.', array( 'status' => 404 ) );
+		}
+
+		$result = wp_spam_comment( $comment_id );
+
+		if ( ! $result ) {
+			$this->logger->log( 'tr-ai-toolkit-spam-comment', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, 'wp_spam_comment failed' );
+			return new \WP_Error( 'spam_failed', 'Failed to mark comment as spam.', array( 'status' => 500 ) );
+		}
+
+		$this->logger->log( 'tr-ai-toolkit-spam-comment', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		return array(
+			'comment_id' => $comment_id,
+			'status'     => 'spam',
+			'spammed'    => true,
 		);
 	}
 
@@ -387,7 +493,9 @@ class TR_AI_Toolkit_Comments_Module {
 			'tr-ai-toolkit-list-comments',
 			'tr-ai-toolkit-get-comment',
 			'tr-ai-toolkit-approve-comment',
+			'tr-ai-toolkit-unapprove-comment',
 			'tr-ai-toolkit-trash-comment',
+			'tr-ai-toolkit-spam-comment',
 			'tr-ai-toolkit-reply-to-comment',
 		), true );
 	}
@@ -398,7 +506,9 @@ class TR_AI_Toolkit_Comments_Module {
 			'tr-ai-toolkit-list-comments'       => $this->execute_list_comments( $args ),
 			'tr-ai-toolkit-get-comment'         => $this->execute_get_comment( $args ),
 			'tr-ai-toolkit-approve-comment'     => $this->execute_approve_comment( $args ),
+			'tr-ai-toolkit-unapprove-comment'   => $this->execute_unapprove_comment( $args ),
 			'tr-ai-toolkit-trash-comment'       => $this->execute_trash_comment( $args ),
+			'tr-ai-toolkit-spam-comment'        => $this->execute_spam_comment( $args ),
 			'tr-ai-toolkit-reply-to-comment'    => $this->execute_reply_to_comment( $args ),
 			default                             => new \WP_Error( 'not_found', "Tool '{$name}' not found.", array( 'status' => 404 ) ),
 		};
@@ -436,8 +546,22 @@ class TR_AI_Toolkit_Comments_Module {
 				) ),
 			),
 			array(
+				'name'        => 'tr-ai-toolkit-unapprove-comment',
+				'description' => 'Returns an approved comment to pending (hold) status, hiding it from public view.',
+				'inputSchema' => array( 'type' => 'object', 'required' => array( 'comment_id' ), 'properties' => array(
+					'comment_id' => array( 'type' => 'integer' ),
+				) ),
+			),
+			array(
 				'name'        => 'tr-ai-toolkit-trash-comment',
 				'description' => 'Moves a comment to trash. Does not permanently delete it.',
+				'inputSchema' => array( 'type' => 'object', 'required' => array( 'comment_id' ), 'properties' => array(
+					'comment_id' => array( 'type' => 'integer' ),
+				) ),
+			),
+			array(
+				'name'        => 'tr-ai-toolkit-spam-comment',
+				'description' => 'Marks a comment as spam.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'comment_id' ), 'properties' => array(
 					'comment_id' => array( 'type' => 'integer' ),
 				) ),

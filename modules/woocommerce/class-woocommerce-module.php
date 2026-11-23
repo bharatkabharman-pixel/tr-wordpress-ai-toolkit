@@ -46,6 +46,8 @@ class TR_AI_Toolkit_WooCommerce_Module {
 		$this->register_update_order_status();
 		$this->register_list_customers();
 		$this->register_list_coupons();
+		$this->register_create_coupon();
+		$this->register_get_inventory_summary();
 		$this->register_get_sales_summary();
 	}
 
@@ -649,6 +651,149 @@ class TR_AI_Toolkit_WooCommerce_Module {
 		);
 	}
 
+	private function register_create_coupon(): void {
+		wp_register_ability(
+			'tr-ai-toolkit-wc-create-coupon',
+			array(
+				'label'       => __( 'Create WooCommerce Coupon', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Creates a new WooCommerce discount coupon.', 'tr-wordpress-ai-toolkit' ),
+				'category'    => TR_AI_Toolkit_Abilities_Manager::CATEGORY,
+				'input_schema' => array(
+					'type'       => 'object',
+					'required'   => array( 'code', 'discount_type', 'amount' ),
+					'properties' => array(
+						'code'            => array( 'type' => 'string',  'description' => 'Unique coupon code.' ),
+						'discount_type'   => array( 'type' => 'string',  'description' => 'percent, fixed_cart or fixed_product.' ),
+						'amount'          => array( 'type' => 'string',  'description' => 'Discount amount (e.g. "10" for 10% or £10).' ),
+						'expiry_date'     => array( 'type' => 'string',  'description' => 'Expiry date in YYYY-MM-DD format.' ),
+						'usage_limit'     => array( 'type' => 'integer', 'description' => 'Maximum number of times this coupon can be used.' ),
+						'minimum_amount'  => array( 'type' => 'string',  'description' => 'Minimum cart amount required.' ),
+						'individual_use'  => array( 'type' => 'boolean', 'description' => 'Whether coupon cannot be used with other coupons.' ),
+						'free_shipping'   => array( 'type' => 'boolean', 'description' => 'Whether to grant free shipping.' ),
+					),
+				),
+				'permission_callback' => function () {
+					return current_user_can( 'edit_shop_orders' ) ? true : new \WP_Error( 'forbidden', 'Insufficient permissions.', array( 'status' => 403 ) );
+				},
+				'execute_callback' => function ( array $input ) {
+					return $this->execute_create_coupon( $input );
+				},
+				'meta' => array( 'mcp' => array( 'public' => true ) ),
+			)
+		);
+	}
+
+	private function execute_create_coupon( array $input ): array|\WP_Error {
+		$code = sanitize_text_field( strtolower( $input['code'] ?? '' ) );
+		if ( empty( $code ) ) {
+			return new \WP_Error( 'invalid_input', 'Coupon code is required.', array( 'status' => 400 ) );
+		}
+
+		if ( wc_get_coupon_id_by_code( $code ) ) {
+			return new \WP_Error( 'duplicate_code', "A coupon with code '{$code}' already exists.", array( 'status' => 409 ) );
+		}
+
+		$discount_type = sanitize_text_field( $input['discount_type'] ?? 'fixed_cart' );
+		$allowed_types = array( 'percent', 'fixed_cart', 'fixed_product' );
+		if ( ! in_array( $discount_type, $allowed_types, true ) ) {
+			return new \WP_Error( 'invalid_discount_type', 'discount_type must be percent, fixed_cart or fixed_product.', array( 'status' => 400 ) );
+		}
+
+		$coupon = new \WC_Coupon();
+		$coupon->set_code( $code );
+		$coupon->set_discount_type( $discount_type );
+		$coupon->set_amount( wc_format_decimal( $input['amount'] ?? '0' ) );
+
+		if ( ! empty( $input['expiry_date'] ) ) {
+			$coupon->set_date_expires( sanitize_text_field( $input['expiry_date'] ) );
+		}
+		if ( isset( $input['usage_limit'] ) ) {
+			$coupon->set_usage_limit( (int) $input['usage_limit'] );
+		}
+		if ( ! empty( $input['minimum_amount'] ) ) {
+			$coupon->set_minimum_amount( wc_format_decimal( $input['minimum_amount'] ) );
+		}
+		if ( isset( $input['individual_use'] ) ) {
+			$coupon->set_individual_use( (bool) $input['individual_use'] );
+		}
+		if ( isset( $input['free_shipping'] ) ) {
+			$coupon->set_free_shipping( (bool) $input['free_shipping'] );
+		}
+
+		$id = $coupon->save();
+		if ( ! $id ) {
+			$this->logger->log( 'tr-ai-toolkit-wc-create-coupon', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, 'save() returned 0' );
+			return new \WP_Error( 'create_failed', 'Failed to create coupon.', array( 'status' => 500 ) );
+		}
+
+		$this->logger->log( 'tr-ai-toolkit-wc-create-coupon', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS, "Coupon ID {$id}" );
+		$saved = new \WC_Coupon( $id );
+		return array(
+			'id'            => $id,
+			'code'          => $saved->get_code(),
+			'discount_type' => $saved->get_discount_type(),
+			'amount'        => $saved->get_amount(),
+			'expiry_date'   => $saved->get_date_expires() ? $saved->get_date_expires()->date( 'Y-m-d' ) : null,
+			'usage_limit'   => $saved->get_usage_limit() ?: 'unlimited',
+			'created'       => true,
+		);
+	}
+
+	private function register_get_inventory_summary(): void {
+		wp_register_ability(
+			'tr-ai-toolkit-wc-get-inventory-summary',
+			array(
+				'label'       => __( 'Get WooCommerce Inventory Summary', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Returns product stock counts: total, in stock, out of stock, on backorder and low stock.', 'tr-wordpress-ai-toolkit' ),
+				'category'    => TR_AI_Toolkit_Abilities_Manager::CATEGORY,
+				'input_schema' => array( 'type' => 'object', 'properties' => array() ),
+				'permission_callback' => function () {
+					return current_user_can( 'edit_products' ) ? true : new \WP_Error( 'forbidden', 'Insufficient permissions.', array( 'status' => 403 ) );
+				},
+				'execute_callback' => function ( array $input ) {
+					return $this->execute_get_inventory_summary( $input );
+				},
+				'meta' => array( 'mcp' => array( 'public' => true ) ),
+			)
+		);
+	}
+
+	private function execute_get_inventory_summary( array $input ): array {
+		$instock     = count( wc_get_products( array( 'stock_status' => 'instock',     'limit' => -1, 'return' => 'ids', 'status' => 'publish' ) ) );
+		$outofstock  = count( wc_get_products( array( 'stock_status' => 'outofstock',  'limit' => -1, 'return' => 'ids', 'status' => 'publish' ) ) );
+		$onbackorder = count( wc_get_products( array( 'stock_status' => 'onbackorder', 'limit' => -1, 'return' => 'ids', 'status' => 'publish' ) ) );
+
+		$low_stock_threshold = absint( get_option( 'woocommerce_notify_low_stock_amount', 2 ) );
+		$low_stock_ids       = wc_get_products( array(
+			'stock_status'       => 'instock',
+			'manage_stock'       => true,
+			'limit'              => -1,
+			'return'             => 'ids',
+			'status'             => 'publish',
+		) );
+
+		$low_stock_count = 0;
+		foreach ( $low_stock_ids as $pid ) {
+			$product = wc_get_product( $pid );
+			if ( $product && $product->get_manage_stock() ) {
+				$qty = (int) $product->get_stock_quantity();
+				if ( $qty <= $low_stock_threshold ) {
+					$low_stock_count++;
+				}
+			}
+		}
+
+		$this->logger->log( 'tr-ai-toolkit-wc-get-inventory-summary', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		return array(
+			'in_stock'          => $instock,
+			'out_of_stock'      => $outofstock,
+			'on_backorder'      => $onbackorder,
+			'low_stock'         => $low_stock_count,
+			'low_stock_threshold' => $low_stock_threshold,
+			'total_published'   => $instock + $outofstock + $onbackorder,
+		);
+	}
+
 	// -------------------------------------------------------------------------
 	// Sales Summary
 	// -------------------------------------------------------------------------
@@ -797,6 +942,8 @@ class TR_AI_Toolkit_WooCommerce_Module {
 			'tr-ai-toolkit-wc-update-order-status',
 			'tr-ai-toolkit-wc-list-customers',
 			'tr-ai-toolkit-wc-list-coupons',
+			'tr-ai-toolkit-wc-create-coupon',
+			'tr-ai-toolkit-wc-get-inventory-summary',
 			'tr-ai-toolkit-wc-get-sales-summary',
 		), true );
 	}
@@ -807,19 +954,21 @@ class TR_AI_Toolkit_WooCommerce_Module {
 		}
 
 		return match ( $name ) {
-			'tr-ai-toolkit-wc-list-products'       => $this->execute_list_products( $args ),
-			'tr-ai-toolkit-wc-get-product'         => $this->execute_get_product( $args ),
-			'tr-ai-toolkit-wc-search-products'     => $this->execute_search_products( $args ),
-			'tr-ai-toolkit-wc-create-product'      => $this->execute_create_product( $args ),
-			'tr-ai-toolkit-wc-update-product'      => $this->execute_update_product( $args ),
+			'tr-ai-toolkit-wc-list-products'          => $this->execute_list_products( $args ),
+			'tr-ai-toolkit-wc-get-product'            => $this->execute_get_product( $args ),
+			'tr-ai-toolkit-wc-search-products'        => $this->execute_search_products( $args ),
+			'tr-ai-toolkit-wc-create-product'         => $this->execute_create_product( $args ),
+			'tr-ai-toolkit-wc-update-product'         => $this->execute_update_product( $args ),
 			'tr-ai-toolkit-wc-get-low-stock-products' => $this->execute_get_low_stock_products( $args ),
-			'tr-ai-toolkit-wc-list-orders'         => $this->execute_list_orders( $args ),
-			'tr-ai-toolkit-wc-get-order'           => $this->execute_get_order( $args ),
-			'tr-ai-toolkit-wc-update-order-status' => $this->execute_update_order_status( $args ),
-			'tr-ai-toolkit-wc-list-customers'      => $this->execute_list_customers( $args ),
-			'tr-ai-toolkit-wc-list-coupons'        => $this->execute_list_coupons( $args ),
-			'tr-ai-toolkit-wc-get-sales-summary'   => $this->execute_get_sales_summary( $args ),
-			default                                 => new \WP_Error( 'not_found', "Tool '{$name}' not found.", array( 'status' => 404 ) ),
+			'tr-ai-toolkit-wc-list-orders'            => $this->execute_list_orders( $args ),
+			'tr-ai-toolkit-wc-get-order'              => $this->execute_get_order( $args ),
+			'tr-ai-toolkit-wc-update-order-status'    => $this->execute_update_order_status( $args ),
+			'tr-ai-toolkit-wc-list-customers'         => $this->execute_list_customers( $args ),
+			'tr-ai-toolkit-wc-list-coupons'           => $this->execute_list_coupons( $args ),
+			'tr-ai-toolkit-wc-create-coupon'          => $this->execute_create_coupon( $args ),
+			'tr-ai-toolkit-wc-get-inventory-summary'  => $this->execute_get_inventory_summary( $args ),
+			'tr-ai-toolkit-wc-get-sales-summary'      => $this->execute_get_sales_summary( $args ),
+			default                                    => new \WP_Error( 'not_found', "Tool '{$name}' not found.", array( 'status' => 404 ) ),
 		};
 	}
 
@@ -931,6 +1080,25 @@ class TR_AI_Toolkit_WooCommerce_Module {
 					'per_page' => array( 'type' => 'integer' ),
 					'page'     => array( 'type' => 'integer' ),
 				) ),
+			),
+			array(
+				'name'        => 'tr-ai-toolkit-wc-create-coupon',
+				'description' => 'Creates a new WooCommerce discount coupon. Validates code uniqueness. Supports percent, fixed_cart and fixed_product discount types.',
+				'inputSchema' => array( 'type' => 'object', 'required' => array( 'code', 'discount_type', 'amount' ), 'properties' => array(
+					'code'           => array( 'type' => 'string' ),
+					'discount_type'  => array( 'type' => 'string', 'description' => 'percent, fixed_cart or fixed_product' ),
+					'amount'         => array( 'type' => 'string' ),
+					'expiry_date'    => array( 'type' => 'string', 'description' => 'YYYY-MM-DD' ),
+					'usage_limit'    => array( 'type' => 'integer' ),
+					'minimum_amount' => array( 'type' => 'string' ),
+					'individual_use' => array( 'type' => 'boolean' ),
+					'free_shipping'  => array( 'type' => 'boolean' ),
+				) ),
+			),
+			array(
+				'name'        => 'tr-ai-toolkit-wc-get-inventory-summary',
+				'description' => 'Returns stock counts for published products: in stock, out of stock, on backorder and low stock count.',
+				'inputSchema' => array( 'type' => 'object', 'properties' => array() ),
 			),
 			array(
 				'name'        => 'tr-ai-toolkit-wc-get-sales-summary',
