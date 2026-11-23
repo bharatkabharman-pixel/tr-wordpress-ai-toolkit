@@ -115,7 +115,7 @@ class TR_AI_Toolkit_Health_Module {
 			'php_major_minor'   => PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,
 			'meets_wp_minimum'  => version_compare( PHP_VERSION, '7.4', '>=' ),
 			'meets_recommended' => version_compare( PHP_VERSION, '8.1', '>=' ),
-			'max_execution_time' => ini_get( 'max_execution_time' ),
+			'max_execution_time' => ( (int) ini_get( 'max_execution_time' ) === -1 || ini_get( 'max_execution_time' ) === '0' ) ? 'unlimited' : (int) ini_get( 'max_execution_time' ) . 's',
 			'max_upload_size'   => wp_max_upload_size(),
 			'extensions'        => $ext_status,
 		);

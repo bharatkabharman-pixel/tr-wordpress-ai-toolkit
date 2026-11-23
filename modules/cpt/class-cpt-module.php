@@ -54,7 +54,7 @@ class TR_AI_Toolkit_CPT_Module {
 
 	private function register_list_post_types(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/list-post-types',
+			'tr-ai-toolkit-list-post-types',
 			array(
 				'label'       => __( 'List Custom Post Types', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns all registered custom post types on this site with their labels and capabilities.', 'tr-wordpress-ai-toolkit' ),
@@ -90,7 +90,7 @@ class TR_AI_Toolkit_CPT_Module {
 			);
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/list-post-types', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-list-post-types', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'post_types' => $result,
 			'count'      => count( $result ),
@@ -103,7 +103,7 @@ class TR_AI_Toolkit_CPT_Module {
 
 	private function register_list_cpt_posts(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/list-cpt-posts',
+			'tr-ai-toolkit-list-cpt-posts',
 			array(
 				'label'       => __( 'List Custom Post Type Posts', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns a paginated list of posts for any custom post type.', 'tr-wordpress-ai-toolkit' ),
@@ -156,7 +156,7 @@ class TR_AI_Toolkit_CPT_Module {
 
 		$query = new \WP_Query( $query_args );
 
-		$this->logger->log( 'tr-ai-toolkit/list-cpt-posts', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-list-cpt-posts', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array(
 			'post_type' => $post_type,
 			'posts'     => array_map( array( $this, 'format_cpt_post' ), $query->posts ),
@@ -173,7 +173,7 @@ class TR_AI_Toolkit_CPT_Module {
 
 	private function register_get_cpt_post(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/get-cpt-post',
+			'tr-ai-toolkit-get-cpt-post',
 			array(
 				'label'       => __( 'Get Custom Post Type Post', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Returns full details for a single custom post type post including custom fields.', 'tr-wordpress-ai-toolkit' ),
@@ -217,7 +217,7 @@ class TR_AI_Toolkit_CPT_Module {
 			$clean_meta[ $key ] = count( $values ) === 1 ? $values[0] : $values;
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/get-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-get-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return array_merge( $this->format_cpt_post( $post ), array(
 			'content'       => wp_strip_all_tags( $post->post_content ),
 			'content_html'  => $post->post_content,
@@ -234,7 +234,7 @@ class TR_AI_Toolkit_CPT_Module {
 
 	private function register_create_cpt_post(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/create-cpt-post',
+			'tr-ai-toolkit-create-cpt-post',
 			array(
 				'label'       => __( 'Create Custom Post Type Post', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Creates a new post for any registered custom post type.', 'tr-wordpress-ai-toolkit' ),
@@ -280,7 +280,7 @@ class TR_AI_Toolkit_CPT_Module {
 		$post_id = wp_insert_post( $post_data, true );
 
 		if ( is_wp_error( $post_id ) ) {
-			$this->logger->log( 'tr-ai-toolkit/create-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, $post_id->get_error_message() );
+			$this->logger->log( 'tr-ai-toolkit-create-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, $post_id->get_error_message() );
 			return $post_id;
 		}
 
@@ -288,12 +288,12 @@ class TR_AI_Toolkit_CPT_Module {
 			foreach ( $input['meta'] as $key => $value ) {
 				$safe_key = sanitize_key( $key );
 				if ( $safe_key && ! str_starts_with( $safe_key, '_' ) ) {
-					update_post_meta( $post_id, $safe_key, sanitize_text_field( $value ) );
+					update_post_meta( $post_id, $safe_key, $this->sanitize_meta_value( $value ) );
 				}
 			}
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/create-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS, "Created {$post_type} ID {$post_id}" );
+		$this->logger->log( 'tr-ai-toolkit-create-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS, "Created {$post_type} ID {$post_id}" );
 		return $this->execute_get_cpt_post( array( 'post_id' => $post_id ) );
 	}
 
@@ -303,7 +303,7 @@ class TR_AI_Toolkit_CPT_Module {
 
 	private function register_update_cpt_post(): void {
 		wp_register_ability(
-			'tr-ai-toolkit/update-cpt-post',
+			'tr-ai-toolkit-update-cpt-post',
 			array(
 				'label'       => __( 'Update Custom Post Type Post', 'tr-wordpress-ai-toolkit' ),
 				'description' => __( 'Updates an existing custom post type post — title, content, status or custom fields.', 'tr-wordpress-ai-toolkit' ),
@@ -340,7 +340,7 @@ class TR_AI_Toolkit_CPT_Module {
 		}
 
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
-			$this->logger->log( 'tr-ai-toolkit/update-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_DENIED );
+			$this->logger->log( 'tr-ai-toolkit-update-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_DENIED );
 			return new \WP_Error( 'forbidden', 'Cannot edit this post.', array( 'status' => 403 ) );
 		}
 
@@ -353,7 +353,7 @@ class TR_AI_Toolkit_CPT_Module {
 		$result = wp_update_post( $update, true );
 
 		if ( is_wp_error( $result ) ) {
-			$this->logger->log( 'tr-ai-toolkit/update-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, $result->get_error_message() );
+			$this->logger->log( 'tr-ai-toolkit-update-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_ERROR, $result->get_error_message() );
 			return $result;
 		}
 
@@ -361,12 +361,12 @@ class TR_AI_Toolkit_CPT_Module {
 			foreach ( $input['meta'] as $key => $value ) {
 				$safe_key = sanitize_key( $key );
 				if ( $safe_key && ! str_starts_with( $safe_key, '_' ) ) {
-					update_post_meta( $post_id, $safe_key, sanitize_text_field( $value ) );
+					update_post_meta( $post_id, $safe_key, $this->sanitize_meta_value( $value ) );
 				}
 			}
 		}
 
-		$this->logger->log( 'tr-ai-toolkit/update-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		$this->logger->log( 'tr-ai-toolkit-update-cpt-post', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
 		return $this->execute_get_cpt_post( array( 'post_id' => $post_id ) );
 	}
 
@@ -399,27 +399,49 @@ class TR_AI_Toolkit_CPT_Module {
 		return post_type_exists( $post_type );
 	}
 
+	/**
+	 * Sanitizes a custom field value without coercing arrays to strings.
+	 *
+	 * - Scalars: sanitize_text_field (strips HTML/whitespace).
+	 * - Arrays: recursively sanitize each element.
+	 * - Anything else: cast to string and sanitize.
+	 *
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	private function sanitize_meta_value( mixed $value ): mixed {
+		if ( is_array( $value ) ) {
+			return array_map( array( $this, 'sanitize_meta_value' ), $value );
+		}
+
+		if ( is_bool( $value ) || is_int( $value ) || is_float( $value ) ) {
+			return $value;
+		}
+
+		return sanitize_text_field( (string) $value );
+	}
+
 	// -------------------------------------------------------------------------
 	// MCP interface
 	// -------------------------------------------------------------------------
 
 	public function handles( string $name ): bool {
 		return in_array( $name, array(
-			'tr-ai-toolkit/list-post-types',
-			'tr-ai-toolkit/list-cpt-posts',
-			'tr-ai-toolkit/get-cpt-post',
-			'tr-ai-toolkit/create-cpt-post',
-			'tr-ai-toolkit/update-cpt-post',
+			'tr-ai-toolkit-list-post-types',
+			'tr-ai-toolkit-list-cpt-posts',
+			'tr-ai-toolkit-get-cpt-post',
+			'tr-ai-toolkit-create-cpt-post',
+			'tr-ai-toolkit-update-cpt-post',
 		), true );
 	}
 
 	public function execute( string $name, array $args ): mixed {
 		return match ( $name ) {
-			'tr-ai-toolkit/list-post-types'  => $this->execute_list_post_types( $args ),
-			'tr-ai-toolkit/list-cpt-posts'   => $this->execute_list_cpt_posts( $args ),
-			'tr-ai-toolkit/get-cpt-post'     => $this->execute_get_cpt_post( $args ),
-			'tr-ai-toolkit/create-cpt-post'  => $this->execute_create_cpt_post( $args ),
-			'tr-ai-toolkit/update-cpt-post'  => $this->execute_update_cpt_post( $args ),
+			'tr-ai-toolkit-list-post-types'  => $this->execute_list_post_types( $args ),
+			'tr-ai-toolkit-list-cpt-posts'   => $this->execute_list_cpt_posts( $args ),
+			'tr-ai-toolkit-get-cpt-post'     => $this->execute_get_cpt_post( $args ),
+			'tr-ai-toolkit-create-cpt-post'  => $this->execute_create_cpt_post( $args ),
+			'tr-ai-toolkit-update-cpt-post'  => $this->execute_update_cpt_post( $args ),
 			default                          => new \WP_Error( 'not_found', "Tool '{$name}' not found.", array( 'status' => 404 ) ),
 		};
 	}
@@ -427,12 +449,12 @@ class TR_AI_Toolkit_CPT_Module {
 	public function get_mcp_tools(): array {
 		return array(
 			array(
-				'name'        => 'tr-ai-toolkit/list-post-types',
+				'name'        => 'tr-ai-toolkit-list-post-types',
 				'description' => 'Lists all public custom post types registered on this WordPress site with labels, archive info and published count.',
 				'inputSchema' => array( 'type' => 'object', 'properties' => array() ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/list-cpt-posts',
+				'name'        => 'tr-ai-toolkit-list-cpt-posts',
 				'description' => 'Returns paginated posts for any custom post type (portfolio, testimonials, events, etc.). Provide the post_type slug.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'post_type' ), 'properties' => array(
 					'post_type' => array( 'type' => 'string' ),
@@ -443,14 +465,14 @@ class TR_AI_Toolkit_CPT_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/get-cpt-post',
+				'name'        => 'tr-ai-toolkit-get-cpt-post',
 				'description' => 'Returns full details for a single custom post type post including all custom fields (non-private meta).',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'post_id' ), 'properties' => array(
 					'post_id' => array( 'type' => 'integer' ),
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/create-cpt-post',
+				'name'        => 'tr-ai-toolkit-create-cpt-post',
 				'description' => 'Creates a new post for any registered custom post type with optional custom fields. Defaults to draft.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'post_type', 'title' ), 'properties' => array(
 					'post_type' => array( 'type' => 'string' ),
@@ -462,7 +484,7 @@ class TR_AI_Toolkit_CPT_Module {
 				) ),
 			),
 			array(
-				'name'        => 'tr-ai-toolkit/update-cpt-post',
+				'name'        => 'tr-ai-toolkit-update-cpt-post',
 				'description' => 'Updates an existing custom post type post — title, content, status or custom fields.',
 				'inputSchema' => array( 'type' => 'object', 'required' => array( 'post_id' ), 'properties' => array(
 					'post_id' => array( 'type' => 'integer' ),
