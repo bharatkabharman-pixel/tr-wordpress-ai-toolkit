@@ -4,11 +4,11 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.3.1
+Stable tag: 1.4.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, users, WooCommerce and site health using natural language. 68 tools across 8 modules.
+Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, redirects, categories, tags, users, WooCommerce and site health using natural language. 93 tools across 10 modules.
 
 == Description ==
 
@@ -135,6 +135,17 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 5. Activity Log showing recent AI tool invocations.
 
 == Changelog ==
+
+= 1.4.0 — 2026-11-24 =
+* New: SEO module — `get-post-seo` returns all SEO fields in one call: meta title, description, focus keyword, canonical URL, robots directives, Open Graph, and Twitter Card data.
+* Enhanced: `update-post-seo` now supports focus_keyword, canonical_url, robots (noindex/nofollow/noarchive/nosnippet), og_title, og_description, and og_image_url. Only supplied fields are updated.
+* Enhanced: `analyze-content-structure` now returns paragraph count, images missing alt text, empty links, H1 count, heading hierarchy issues, and a structured issues/warnings/recommendations object.
+* New: `get-robots-txt` returns robots.txt content, source (physical or virtual), discourage-indexing status, and SEO plugin sitemap hints.
+* New: `get-sitemap-status` detects the active sitemap provider (WordPress core, Yoast, Rank Math, AIOSEO) and returns expected sitemap URLs.
+* New module: Redirects (6 tools) — list, get, create, update, delete redirects via the Redirection plugin; loop and chain detection.
+* New module: Taxonomy (10 tools) — list, get, update, delete, and merge categories and tags; SEO metadata reading per term.
+* New permission: `can_manage_terms()` — required for category/tag write operations.
+* Total: 93 tools across 10 modules (up from 68 across 8).
 
 = 1.3.1 — 2026-11-24 =
 * Fixed: Fatal error "Cannot use 'true' as class name" on PHP 8.1 — `true` as a standalone return type requires PHP 8.2+. Changed return type of `Permissions::require()` to `bool|\WP_Error`.

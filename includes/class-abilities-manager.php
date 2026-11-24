@@ -104,13 +104,21 @@ class TR_AI_Toolkit_Abilities_Manager {
 				'file'  => TR_AI_TOOLKIT_PATH . 'modules/cpt/class-cpt-module.php',
 				'class' => 'TR_AI_Toolkit_CPT_Module',
 			),
+			'redirects'   => array(
+				'file'  => TR_AI_TOOLKIT_PATH . 'modules/redirects/class-redirects-module.php',
+				'class' => 'TR_AI_Toolkit_Redirects_Module',
+			),
+			'taxonomy'    => array(
+				'file'  => TR_AI_TOOLKIT_PATH . 'modules/taxonomy/class-taxonomy-module.php',
+				'class' => 'TR_AI_Toolkit_Taxonomy_Module',
+			),
 		);
 
-		$saved       = $this->settings->get( 'mcp.exposed_modules', array() );
-		$new_modules = array( 'woocommerce', 'comments', 'cpt' );
-		$exposed     = ( empty( array_intersect( $new_modules, (array) $saved ) ) )
-			? array_unique( array_merge( (array) $saved, $new_modules ) )
-			: (array) $saved;
+		// Auto-expose any module that is not yet in the saved setting so that
+		// existing installs automatically gain new modules on update.
+		$auto_modules = array( 'woocommerce', 'comments', 'cpt', 'redirects', 'taxonomy' );
+		$saved        = (array) $this->settings->get( 'mcp.exposed_modules', array() );
+		$exposed      = array_unique( array_merge( $saved, $auto_modules ) );
 
 		if ( empty( $exposed ) ) {
 			$exposed = array_keys( $module_map );
