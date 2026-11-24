@@ -52,6 +52,7 @@ class TR_AI_Toolkit_SEO_Module {
 		$this->register_find_missing_meta_descriptions();
 		$this->register_find_posts_without_featured_images();
 		$this->register_analyze_content_structure();
+		$this->register_update_post_seo();
 	}
 
 	private function register_get_seo_summary(): void {
@@ -367,12 +368,79 @@ class TR_AI_Toolkit_SEO_Module {
 		);
 	}
 
+	private function register_update_post_seo(): void {
+		wp_register_ability(
+			'tr-ai-toolkit-update-post-seo',
+			array(
+				'label'       => __( 'Update Post SEO', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Sets the SEO meta title and/or meta description for a post. Writes to the detected SEO plugin (Yoast, Rank Math, AIOSEO) or falls back to native meta keys.', 'tr-wordpress-ai-toolkit' ),
+				'category'    => TR_AI_Toolkit_Abilities_Manager::CATEGORY,
+				'input_schema' => array(
+					'type'       => 'object',
+					'required'   => array( 'post_id' ),
+					'properties' => array(
+						'post_id'          => array( 'type' => 'integer', 'description' => 'Post or page ID.' ),
+						'meta_title'       => array( 'type' => 'string',  'description' => 'SEO meta title. Leave empty to skip.' ),
+						'meta_description' => array( 'type' => 'string',  'description' => 'SEO meta description. Leave empty to skip.' ),
+					),
+				),
+				'permission_callback' => fn() => $this->permissions->can_write() ?: new \WP_Error( 'forbidden', '', array( 'status' => 403 ) ),
+				'execute_callback'    => fn( array $input ) => $this->execute_update_post_seo( $input ),
+				'meta' => array( 'mcp' => array( 'public' => true ) ),
+			)
+		);
+	}
+
+	/** @param array<string, mixed> $input */
+	private function execute_update_post_seo( array $input ): array|\WP_Error {
+		$post_id = absint( $input['post_id'] ?? 0 );
+		$post    = $post_id ? get_post( $post_id ) : null;
+
+		if ( ! $post ) {
+			return new \WP_Error( 'not_found', __( 'Post not found.', 'tr-wordpress-ai-toolkit' ) );
+		}
+
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			$this->logger->log( 'tr-ai-toolkit-update-post-seo', $input, TR_AI_Toolkit_Logger::STATUS_DENIED );
+			return new \WP_Error( 'forbidden', __( 'You cannot edit this post.', 'tr-wordpress-ai-toolkit' ), array( 'status' => 403 ) );
+		}
+
+		$seo_plugin = $this->detect_seo_plugin();
+		$adapter    = $this->seo_adapters[ $seo_plugin ] ?? null;
+
+		$title_key = $adapter['title']       ?? '_tr_seo_title';
+		$desc_key  = $adapter['description'] ?? '_tr_seo_description';
+
+		$updated = array();
+
+		if ( isset( $input['meta_title'] ) ) {
+			update_post_meta( $post_id, $title_key, sanitize_text_field( $input['meta_title'] ) );
+			$updated['meta_title'] = $input['meta_title'];
+		}
+		if ( isset( $input['meta_description'] ) ) {
+			update_post_meta( $post_id, $desc_key, sanitize_textarea_field( $input['meta_description'] ) );
+			$updated['meta_description'] = $input['meta_description'];
+		}
+
+		if ( empty( $updated ) ) {
+			return new \WP_Error( 'no_fields', __( 'Provide at least meta_title or meta_description.', 'tr-wordpress-ai-toolkit' ), array( 'status' => 400 ) );
+		}
+
+		$this->logger->log( 'tr-ai-toolkit-update-post-seo', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		return array(
+			'post_id'    => $post_id,
+			'seo_plugin' => $seo_plugin,
+			'updated'    => $updated,
+		);
+	}
+
 	public function handles( string $name ): bool {
 		return in_array( $name, array(
 			'tr-ai-toolkit-get-seo-summary', 'tr-ai-toolkit-find-missing-meta-titles',
 			'tr-ai-toolkit-find-missing-meta-descriptions',
 			'tr-ai-toolkit-find-posts-without-featured-images',
 			'tr-ai-toolkit-analyze-content-structure',
+			'tr-ai-toolkit-update-post-seo',
 		), true );
 	}
 
@@ -383,6 +451,7 @@ class TR_AI_Toolkit_SEO_Module {
 			'tr-ai-toolkit-find-missing-meta-descriptions'     => $this->execute_find_missing_meta( $args, 'description' ),
 			'tr-ai-toolkit-find-posts-without-featured-images' => $this->execute_find_posts_without_featured_images( $args ),
 			'tr-ai-toolkit-analyze-content-structure'          => $this->execute_analyze_content_structure( $args ),
+			'tr-ai-toolkit-update-post-seo'                    => $this->execute_update_post_seo( $args ),
 			default                                            => new \WP_Error( 'not_found', "Unknown tool: {$name}" ),
 		};
 	}
@@ -394,6 +463,15 @@ class TR_AI_Toolkit_SEO_Module {
 			array( 'name' => 'tr-ai-toolkit-find-missing-meta-descriptions', 'description' => 'Returns posts that are missing SEO meta descriptions.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ) ) ) ),
 			array( 'name' => 'tr-ai-toolkit-find-posts-without-featured-images', 'description' => 'Returns published posts that have no featured image set.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer' ), 'page' => array( 'type' => 'integer' ) ) ) ),
 			array( 'name' => 'tr-ai-toolkit-analyze-content-structure', 'description' => 'Analyses a single post for SEO signals: headings, word count, links, images, meta.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'post_id' ), 'properties' => array( 'post_id' => array( 'type' => 'integer' ) ) ) ),
+			array(
+				'name'        => 'tr-ai-toolkit-update-post-seo',
+				'description' => 'Sets the SEO meta title and/or meta description for a post. Automatically writes to the detected SEO plugin (Yoast, Rank Math, AIOSEO) or native meta if none found.',
+				'inputSchema' => array( 'type' => 'object', 'required' => array( 'post_id' ), 'properties' => array(
+					'post_id'          => array( 'type' => 'integer' ),
+					'meta_title'       => array( 'type' => 'string' ),
+					'meta_description' => array( 'type' => 'string' ),
+				) ),
+			),
 		);
 	}
 

@@ -62,7 +62,7 @@ class TR_AI_Toolkit_Permissions {
 	 * @param string $check Method name on this class, e.g. 'can_read'.
 	 * @return true|\WP_Error
 	 */
-	public function require( string $check ): true|\WP_Error {
+	public function require( string $check ): bool|\WP_Error {
 		if ( ! method_exists( $this, $check ) || ! $this->$check() ) {
 			return new \WP_Error(
 				'tr_ai_toolkit_forbidden',

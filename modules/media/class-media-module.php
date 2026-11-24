@@ -29,6 +29,8 @@ class TR_AI_Toolkit_Media_Module {
 		$this->register_search_media();
 		$this->register_update_media_metadata();
 		$this->register_find_unused_media();
+		$this->register_upload_media_from_url();
+		$this->register_find_media_without_alt();
 	}
 
 	private function register_list_media(): void {
@@ -357,22 +359,173 @@ class TR_AI_Toolkit_Media_Module {
 		);
 	}
 
+	private function register_upload_media_from_url(): void {
+		wp_register_ability(
+			'tr-ai-toolkit-upload-media-from-url',
+			array(
+				'label'       => __( 'Upload Media From URL', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Downloads a file from a URL and adds it to the media library. Supports images and PDF only.', 'tr-wordpress-ai-toolkit' ),
+				'category'    => TR_AI_Toolkit_Abilities_Manager::CATEGORY,
+				'input_schema' => array(
+					'type'       => 'object',
+					'required'   => array( 'url' ),
+					'properties' => array(
+						'url'       => array( 'type' => 'string',  'description' => 'Public URL of the file to download.' ),
+						'title'     => array( 'type' => 'string',  'description' => 'Optional title for the attachment.' ),
+						'alt_text'  => array( 'type' => 'string',  'description' => 'Optional alt text (images only).' ),
+						'post_id'   => array( 'type' => 'integer', 'description' => 'Optional post to attach the media to.' ),
+					),
+				),
+				'permission_callback' => fn() => $this->permissions->can_upload() ?: new \WP_Error( 'forbidden', '', array( 'status' => 403 ) ),
+				'execute_callback'    => fn( array $input ) => $this->execute_upload_media_from_url( $input ),
+				'meta' => array( 'mcp' => array( 'public' => true ) ),
+			)
+		);
+	}
+
+	/** @param array<string, mixed> $input */
+	private function execute_upload_media_from_url( array $input ): array|\WP_Error {
+		$url = esc_url_raw( $input['url'] ?? '' );
+		if ( empty( $url ) ) {
+			return new \WP_Error( 'invalid_url', __( 'url is required.', 'tr-wordpress-ai-toolkit' ) );
+		}
+
+		$parsed = wp_parse_url( $url );
+		if ( ! isset( $parsed['host'] ) || $this->is_private_host( $parsed['host'] ) ) {
+			return new \WP_Error( 'forbidden_host', __( 'Downloading from private or local addresses is not allowed.', 'tr-wordpress-ai-toolkit' ), array( 'status' => 400 ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/media.php';
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		$tmp = download_url( $url );
+		if ( is_wp_error( $tmp ) ) {
+			return $tmp;
+		}
+
+		if ( function_exists( 'finfo_open' ) ) {
+			$finfo     = finfo_open( FILEINFO_MIME_TYPE );
+			$mime_type = (string) finfo_file( $finfo, $tmp );
+			finfo_close( $finfo );
+
+			$allowed = array( 'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/svg+xml', 'application/pdf' );
+			if ( ! in_array( $mime_type, $allowed, true ) ) {
+				@unlink( $tmp ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				return new \WP_Error( 'invalid_mime', sprintf( __( 'File type %s is not allowed. Only images and PDF are accepted.', 'tr-wordpress-ai-toolkit' ), $mime_type ), array( 'status' => 400 ) );
+			}
+		}
+
+		$filename = basename( $parsed['path'] ?? 'upload' );
+		$file_array = array(
+			'name'     => sanitize_file_name( $filename ),
+			'tmp_name' => $tmp,
+		);
+
+		$post_id = absint( $input['post_id'] ?? 0 );
+		$id      = media_handle_sideload( $file_array, $post_id );
+
+		if ( is_wp_error( $id ) ) {
+			@unlink( $tmp ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			return $id;
+		}
+
+		if ( isset( $input['title'] ) ) {
+			wp_update_post( array( 'ID' => $id, 'post_title' => sanitize_text_field( $input['title'] ) ) );
+		}
+		if ( isset( $input['alt_text'] ) ) {
+			update_post_meta( $id, '_wp_attachment_image_alt', sanitize_text_field( $input['alt_text'] ) );
+		}
+
+		$this->logger->log( 'tr-ai-toolkit-upload-media-from-url', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS, "Attachment ID {$id}" );
+		return $this->format_attachment( get_post( $id ) );
+	}
+
+	private function register_find_media_without_alt(): void {
+		wp_register_ability(
+			'tr-ai-toolkit-find-media-without-alt',
+			array(
+				'label'       => __( 'Find Media Without Alt Text', 'tr-wordpress-ai-toolkit' ),
+				'description' => __( 'Returns images in the media library that are missing alt text. Useful for accessibility and SEO audits.', 'tr-wordpress-ai-toolkit' ),
+				'category'    => TR_AI_Toolkit_Abilities_Manager::CATEGORY,
+				'input_schema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'per_page' => array( 'type' => 'integer', 'description' => 'Max results (1-100). Default 20.' ),
+						'page'     => array( 'type' => 'integer', 'description' => 'Page number. Default 1.' ),
+					),
+				),
+				'permission_callback' => fn() => $this->permissions->can_upload() ?: new \WP_Error( 'forbidden', '', array( 'status' => 403 ) ),
+				'execute_callback'    => fn( array $input ) => $this->execute_find_media_without_alt( $input ),
+				'meta' => array( 'mcp' => array( 'public' => true ) ),
+			)
+		);
+	}
+
+	/** @param array<string, mixed> $input */
+	private function execute_find_media_without_alt( array $input ): array {
+		$per_page = min( 100, max( 1, (int) ( $input['per_page'] ?? 20 ) ) );
+		$page     = max( 1, (int) ( $input['page'] ?? 1 ) );
+
+		$query = new \WP_Query( array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'post_mime_type' => 'image',
+			'posts_per_page' => $per_page,
+			'paged'          => $page,
+			'meta_query'     => array(
+				'relation' => 'OR',
+				array(
+					'key'     => '_wp_attachment_image_alt',
+					'compare' => 'NOT EXISTS',
+				),
+				array(
+					'key'     => '_wp_attachment_image_alt',
+					'value'   => '',
+					'compare' => '=',
+				),
+			),
+		) );
+
+		$items = array();
+		foreach ( $query->posts as $attachment ) {
+			$items[] = array(
+				'id'    => $attachment->ID,
+				'title' => $attachment->post_title,
+				'url'   => wp_get_attachment_url( $attachment->ID ),
+				'date'  => $attachment->post_date_gmt,
+			);
+		}
+
+		$this->logger->log( 'tr-ai-toolkit-find-media-without-alt', $input, TR_AI_Toolkit_Logger::STATUS_SUCCESS );
+		return array(
+			'items'       => $items,
+			'total'       => (int) $query->found_posts,
+			'total_pages' => (int) $query->max_num_pages,
+			'page'        => $page,
+			'per_page'    => $per_page,
+		);
+	}
+
 	public function handles( string $name ): bool {
 		return in_array( $name, array(
 			'tr-ai-toolkit-list-media', 'tr-ai-toolkit-get-media-details',
 			'tr-ai-toolkit-search-media', 'tr-ai-toolkit-update-media-metadata',
-			'tr-ai-toolkit-find-unused-media',
+			'tr-ai-toolkit-find-unused-media', 'tr-ai-toolkit-upload-media-from-url',
+			'tr-ai-toolkit-find-media-without-alt',
 		), true );
 	}
 
 	public function execute( string $name, array $args ): mixed {
 		return match ( $name ) {
-			'tr-ai-toolkit-list-media'            => $this->execute_list_media( $args ),
-			'tr-ai-toolkit-get-media-details'     => $this->execute_get_media_details( $args ),
-			'tr-ai-toolkit-search-media'          => $this->execute_search_media( $args ),
-			'tr-ai-toolkit-update-media-metadata' => $this->execute_update_media_metadata( $args ),
-			'tr-ai-toolkit-find-unused-media'     => $this->execute_find_unused_media( $args ),
-			default                               => new \WP_Error( 'not_found', "Unknown tool: {$name}" ),
+			'tr-ai-toolkit-list-media'              => $this->execute_list_media( $args ),
+			'tr-ai-toolkit-get-media-details'       => $this->execute_get_media_details( $args ),
+			'tr-ai-toolkit-search-media'            => $this->execute_search_media( $args ),
+			'tr-ai-toolkit-update-media-metadata'   => $this->execute_update_media_metadata( $args ),
+			'tr-ai-toolkit-find-unused-media'       => $this->execute_find_unused_media( $args ),
+			'tr-ai-toolkit-upload-media-from-url'   => $this->execute_upload_media_from_url( $args ),
+			'tr-ai-toolkit-find-media-without-alt'  => $this->execute_find_media_without_alt( $args ),
+			default                                 => new \WP_Error( 'not_found', "Unknown tool: {$name}" ),
 		};
 	}
 
@@ -383,6 +536,33 @@ class TR_AI_Toolkit_Media_Module {
 			array( 'name' => 'tr-ai-toolkit-search-media', 'description' => 'Search the media library by filename or title.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'query' ), 'properties' => array( 'query' => array( 'type' => 'string' ), 'per_page' => array( 'type' => 'integer' ), 'mime_type' => array( 'type' => 'string' ) ) ) ),
 			array( 'name' => 'tr-ai-toolkit-update-media-metadata', 'description' => 'Update title, alt text or caption of a media attachment.', 'inputSchema' => array( 'type' => 'object', 'required' => array( 'attachment_id' ), 'properties' => array( 'attachment_id' => array( 'type' => 'integer' ), 'title' => array( 'type' => 'string' ), 'alt_text' => array( 'type' => 'string' ), 'caption' => array( 'type' => 'string' ), 'description' => array( 'type' => 'string' ) ) ) ),
 			array( 'name' => 'tr-ai-toolkit-find-unused-media', 'description' => 'Find media files not attached to any post or used as featured image.', 'inputSchema' => array( 'type' => 'object', 'properties' => array( 'per_page' => array( 'type' => 'integer', 'description' => 'Max results (1-100). Default 20.' ) ) ) ),
+			array(
+				'name'        => 'tr-ai-toolkit-upload-media-from-url',
+				'description' => 'Download a file from a public URL and add it to the media library. Accepts images and PDF only. Blocks private/local addresses.',
+				'inputSchema' => array( 'type' => 'object', 'required' => array( 'url' ), 'properties' => array(
+					'url'      => array( 'type' => 'string' ),
+					'title'    => array( 'type' => 'string' ),
+					'alt_text' => array( 'type' => 'string' ),
+					'post_id'  => array( 'type' => 'integer' ),
+				) ),
+			),
+			array(
+				'name'        => 'tr-ai-toolkit-find-media-without-alt',
+				'description' => 'Returns images missing alt text — use for accessibility and SEO audits.',
+				'inputSchema' => array( 'type' => 'object', 'properties' => array(
+					'per_page' => array( 'type' => 'integer' ),
+					'page'     => array( 'type' => 'integer' ),
+				) ),
+			),
+		);
+	}
+
+	private function is_private_host( string $host ): bool {
+		$ip = gethostbyname( $host );
+		return false === filter_var(
+			$ip,
+			FILTER_VALIDATE_IP,
+			FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
 		);
 	}
 

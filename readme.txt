@@ -4,11 +4,11 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, WooCommerce and site health using natural language.
+Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, users, WooCommerce and site health using natural language. 68 tools across 8 modules.
 
 == Description ==
 
@@ -31,15 +31,15 @@ Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your Word
 
 **Supported AI clients:** Claude.ai Projects, Claude Desktop, Cursor, Windsurf, Codeium and any MCP 2025-03-26 / 2025-11-25 compliant client.
 
-= Modules and Tools (58 total) =
+= Modules and Tools (68 total) =
 
 * **Content (14 tools)** — List, search, create, update and trash posts and pages; manage categories and tags
-* **Media (5 tools)** — Browse, search and update media library metadata; find orphaned attachments
-* **SEO (5 tools)** — Health score estimate, missing meta titles/descriptions, missing featured images, per-post content structure analysis. Supports Yoast SEO, Rank Math and All in One SEO Pack automatically.
+* **Media (7 tools)** — Browse, search and update media library metadata; find orphaned attachments; upload from URL with SSRF protection; find images missing alt text
+* **SEO (6 tools)** — Health score estimate, missing meta titles/descriptions, missing featured images, per-post content structure analysis, write SEO meta. Supports Yoast SEO, Rank Math and All in One SEO Pack automatically.
 * **Site Health (7 tools)** — WordPress version, PHP info, active plugins, active theme, site health summary, permalink structure, cron status
-* **Users (4 tools)** — List and search users, inspect roles and capabilities
-* **WooCommerce (12 tools)** — Products, orders, customers, coupons, low-stock alerts and sales summary. Auto-detects WooCommerce; silently skipped when not active.
-* **Comments (6 tools)** — List, approve, trash and reply to comments; moderation summary
+* **Users (7 tools)** — List, search, create, update and delete users; inspect roles and capabilities
+* **WooCommerce (14 tools)** — Products, orders, customers, coupons, create coupon, inventory summary, low-stock alerts and sales summary. Auto-detects WooCommerce; silently skipped when not active.
+* **Comments (8 tools)** — List, approve, unapprove, trash, spam and reply to comments; moderation summary
 * **Custom Post Types (5 tools)** — Discover and manage any public CPT (portfolio, testimonials, events, etc.) including custom fields
 
 = Key Features =
@@ -135,6 +135,9 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 5. Activity Log showing recent AI tool invocations.
 
 == Changelog ==
+
+= 1.3.1 — 2026-11-24 =
+* Fixed: Fatal error "Cannot use 'true' as class name" on PHP 8.1 — `true` as a standalone return type requires PHP 8.2+. Changed return type of `Permissions::require()` to `bool|\WP_Error`.
 
 = 1.3.0 — 2026-11-23 =
 * Security: Fixed critical session hijacking vulnerability — any authenticated user could delete another user's MCP session. Sessions are now bound to the creating user; deletion verifies ownership.
