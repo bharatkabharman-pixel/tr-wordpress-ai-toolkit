@@ -134,9 +134,12 @@ class TR_AI_Toolkit_Activator {
 				'server_name'     => get_bloginfo( 'name' ) . ' - TR AI Toolkit',
 				'exposed_modules' => array( 'content', 'media', 'seo', 'health', 'users' ),
 			),
-			'logging'     => array(
+			'logging'      => array(
 				'enabled'        => true,
 				'retention_days' => 30,
+			),
+			'integrations' => array(
+				'pagespeed_api_key' => '',
 			),
 		);
 	}

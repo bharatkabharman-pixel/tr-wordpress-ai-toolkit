@@ -4,11 +4,11 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, redirects, categories, tags, users, WooCommerce and site health using natural language. 93 tools across 10 modules.
+Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, redirects, categories, tags, users, WooCommerce, performance and site health using natural language. 105 tools across 11 modules.
 
 == Description ==
 
@@ -31,7 +31,7 @@ Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your Word
 
 **Supported AI clients:** Claude.ai Projects, Claude Desktop, Cursor, Windsurf, Codeium and any MCP 2025-03-26 / 2025-11-25 compliant client.
 
-= Modules and Tools (68 total) =
+= Modules and Tools (105 total) =
 
 * **Content (14 tools)** — List, search, create, update and trash posts and pages; manage categories and tags
 * **Media (7 tools)** — Browse, search and update media library metadata; find orphaned attachments; upload from URL with SSRF protection; find images missing alt text
@@ -41,6 +41,7 @@ Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your Word
 * **WooCommerce (14 tools)** — Products, orders, customers, coupons, create coupon, inventory summary, low-stock alerts and sales summary. Auto-detects WooCommerce; silently skipped when not active.
 * **Comments (8 tools)** — List, approve, unapprove, trash, spam and reply to comments; moderation summary
 * **Custom Post Types (5 tools)** — Discover and manage any public CPT (portfolio, testimonials, events, etc.) including custom fields
+* **Performance (12 tools)** — PageSpeed Insights scores and Core Web Vitals; clear page/site cache for WP Rocket, LiteSpeed, W3 Total Cache and WP Super Cache; optimize images, convert to WebP, generate image variants
 
 = Key Features =
 
@@ -136,6 +137,22 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 
 == Changelog ==
 
+= 1.5.0 — 2026-11-24 =
+* New module: Performance (12 tools) — PageSpeed Insights, Cache management, Image optimization.
+* New: `get-pagespeed-score` — fetches Google PageSpeed Insights v5 for any URL (desktop or mobile), returns performance score, Core Web Vitals (LCP, CLS, FCP, TBT, INP, Speed Index), top 5 improvement opportunities, and top 10 diagnostics. Results cached for 1 hour. Requires optional API key for higher quota.
+* New: `get-core-web-vitals` — returns field data (Chrome UX Report p75 values) alongside lab data, with pass/needs-improvement/fail ratings per metric.
+* New: `get-cache-status` — detects active cache plugin (WP Rocket, LiteSpeed Cache, W3 Total Cache, WP Super Cache) and reports cache directory path, file count and total size.
+* New: `clear-page-cache` — purges cache for a specific post ID using the active cache plugin's native API.
+* New: `clear-all-cache` — purges the entire site cache for the active cache plugin.
+* New: `clear-object-cache` — flushes WordPress object cache (`wp_cache_flush()`).
+* New: `get-image-optimization-stats` — scans up to 100 recent attachments and reports average file size, WebP adoption rate, missing alt text count, and oversized images (> 200 KB).
+* New: `optimize-image` — re-saves a media library image at a specified quality (1–100) using WP_Image_Editor (GD/Imagick); original preserved, optimized copy registered as new attachment.
+* New: `convert-to-webp` — converts any JPEG/PNG media library item to WebP using WP_Image_Editor; WebP registered as new attachment.
+* New: `generate-image-variants` — regenerates all registered WordPress image sizes for an attachment using `wp_generate_attachment_metadata()`.
+* New: `get-image-details` — returns dimensions, file size, MIME type, alt text, caption and all registered size variants for a media library attachment.
+* New: `find-oversized-images` — lists media library images exceeding a configurable file-size threshold (default 200 KB) sorted by size descending, with download URL and edit link.
+* Total: 105 tools across 11 modules (up from 93 across 10).
+
 = 1.4.0 — 2026-11-24 =
 * New: SEO module — `get-post-seo` returns all SEO fields in one call: meta title, description, focus keyword, canonical URL, robots directives, Open Graph, and Twitter Card data.
 * Enhanced: `update-post-seo` now supports focus_keyword, canonical_url, robots (noindex/nofollow/noarchive/nosnippet), og_title, og_description, and og_image_url. Only supplied fields are updated.
@@ -203,6 +220,9 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 * Full audit logging with configurable retention.
 
 == Upgrade Notice ==
+
+= 1.5.0 =
+New Performance module: PageSpeed Insights scores, Core Web Vitals, cache management (WP Rocket, LiteSpeed, W3TC, WP Super Cache) and image optimization tools. 105 total tools across 11 modules.
 
 = 1.3.0 =
 Security update + 7 bug fixes. Fixes a critical vulnerability where any authenticated user could delete another user's MCP session. Also fixes find-unused-media returning empty, CPT custom field corruption, WooCommerce double query, and SEO pagination. All 58 tools now have valid MCP identifiers. Upgrade recommended for all users.

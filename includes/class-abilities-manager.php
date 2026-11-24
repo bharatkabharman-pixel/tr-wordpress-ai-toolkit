@@ -112,11 +112,15 @@ class TR_AI_Toolkit_Abilities_Manager {
 				'file'  => TR_AI_TOOLKIT_PATH . 'modules/taxonomy/class-taxonomy-module.php',
 				'class' => 'TR_AI_Toolkit_Taxonomy_Module',
 			),
+			'performance' => array(
+				'file'  => TR_AI_TOOLKIT_PATH . 'modules/performance/class-performance-module.php',
+				'class' => 'TR_AI_Toolkit_Performance_Module',
+			),
 		);
 
 		// Auto-expose any module that is not yet in the saved setting so that
 		// existing installs automatically gain new modules on update.
-		$auto_modules = array( 'woocommerce', 'comments', 'cpt', 'redirects', 'taxonomy' );
+		$auto_modules = array( 'woocommerce', 'comments', 'cpt', 'redirects', 'taxonomy', 'performance' );
 		$saved        = (array) $this->settings->get( 'mcp.exposed_modules', array() );
 		$exposed      = array_unique( array_merge( $saved, $auto_modules ) );
 
