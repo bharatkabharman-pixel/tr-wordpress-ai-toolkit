@@ -4,7 +4,7 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -135,6 +135,9 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 5. Activity Log showing recent AI tool invocations.
 
 == Changelog ==
+
+= 1.3.1 — 2026-11-24 =
+* Fixed: Fatal error "Cannot use 'true' as class name" on PHP 8.1 — `true` as a standalone return type requires PHP 8.2+. Changed return type of `Permissions::require()` to `bool|\WP_Error`.
 
 = 1.3.0 — 2026-11-23 =
 * Security: Fixed critical session hijacking vulnerability — any authenticated user could delete another user's MCP session. Sessions are now bound to the creating user; deletion verifies ownership.
