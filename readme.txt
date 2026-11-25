@@ -4,11 +4,11 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, redirects, categories, tags, users, WooCommerce, performance and site health using natural language. 105 tools across 11 modules.
+Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, plugins, themes, menus, widgets, server diagnostics, WooCommerce and more using natural language. 128 tools across 14 modules.
 
 == Description ==
 
@@ -31,7 +31,7 @@ Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your Word
 
 **Supported AI clients:** Claude.ai Projects, Claude Desktop, Cursor, Windsurf, Codeium and any MCP 2025-03-26 / 2025-11-25 compliant client.
 
-= Modules and Tools (105 total) =
+= Modules and Tools (128 total) =
 
 * **Content (14 tools)** — List, search, create, update and trash posts and pages; manage categories and tags
 * **Media (7 tools)** — Browse, search and update media library metadata; find orphaned attachments; upload from URL with SSRF protection; find images missing alt text
@@ -42,6 +42,9 @@ Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your Word
 * **Comments (8 tools)** — List, approve, unapprove, trash, spam and reply to comments; moderation summary
 * **Custom Post Types (5 tools)** — Discover and manage any public CPT (portfolio, testimonials, events, etc.) including custom fields
 * **Performance (12 tools)** — PageSpeed Insights scores and Core Web Vitals; clear page/site cache for WP Rocket, LiteSpeed, W3 Total Cache and WP Super Cache; optimize images, convert to WebP, generate image variants
+* **Management (8 tools)** — List, activate and deactivate plugins; check for plugin updates; list and activate themes; read and update site settings (blogname, timezone, discussion, reading)
+* **Diagnostics (6 tools)** — Server info, PHP configuration and extensions, database table sizes, disk usage, error log viewer, scheduled tasks (WP-Cron)
+* **Menus (9 tools)** — List nav menus and their theme-location assignments; get, add, update and delete menu items; create menus and assign to locations; list widget areas and their widgets
 
 = Key Features =
 
@@ -137,6 +140,34 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 
 == Changelog ==
 
+= 1.6.0 — 2026-11-24 =
+* New module: Management (8 tools) — plugin activation/deactivation, plugin update status, theme listing and activation, site settings read/write.
+* New: `list-plugins` — lists all installed plugins with status (active/inactive), version, and whether an update is available. Supports status filter and pagination.
+* New: `activate-plugin` / `deactivate-plugin` — activate or deactivate any installed plugin. Self-protection prevents deactivating TR WordPress AI Toolkit itself.
+* New: `get-plugin-update-status` — returns all plugins with available updates, including current version, new version, and last-checked timestamp.
+* New: `list-themes` — lists all installed themes with status, version and update availability.
+* New: `activate-theme` — switches the active theme by stylesheet name.
+* New: `get-site-settings` — reads general, reading, discussion, permalink and upload settings grouped by category.
+* New: `update-site-settings` — updates a whitelist of safe site options (blogname, timezone, date_format, posts_per_page, etc.); siteurl and home are intentionally excluded.
+* New module: Diagnostics (6 tools) — full server environment inspection.
+* New: `get-server-info` — web server, PHP version, SAPI, OS, database version, WordPress debug flags, memory limits.
+* New: `get-php-configuration` — PHP ini values, key extension presence, full extension list, OPcache stats (hit rate, memory, cached files).
+* New: `get-database-stats` — all database tables with sizes in KB, split into WordPress tables and other tables.
+* New: `get-disk-usage` — uploads, plugins, themes and wp-content directory sizes with file counts.
+* New: `get-error-log` — reads last N lines from the PHP/WordPress error log (WP_DEBUG_LOG or error_log path). Returns basename only for security.
+* New: `get-scheduled-tasks` — all WP-Cron events with next-run time, schedule interval, and args. Reports DISABLE_WP_CRON and ALTERNATE_WP_CRON status.
+* New module: Menus (9 tools) — navigation menu and widget area management.
+* New: `list-nav-menus` — all registered menus with assigned theme locations; also lists unassigned theme locations.
+* New: `get-nav-menu-items` — full item list for any menu (by ID, slug or name) with type, URL, parent, and position.
+* New: `create-nav-menu` — creates a new navigation menu and optionally assigns it to a theme location.
+* New: `add-menu-item` — adds a custom URL, post, page or taxonomy term as a menu item.
+* New: `update-menu-item` — rename, reposition or reparent an existing menu item.
+* New: `delete-menu-item` — removes a menu item permanently.
+* New: `assign-menu-to-location` — assigns (or clears) a menu from a registered theme location.
+* New: `list-widget-areas` — lists all registered sidebars with widget counts.
+* New: `list-widgets` — lists widgets in a sidebar with their title and settings keys.
+* Total: 105 → 128 tools across 11 → 14 modules.
+
 = 1.5.0 — 2026-11-24 =
 * New module: Performance (12 tools) — PageSpeed Insights, Cache management, Image optimization.
 * New: `get-pagespeed-score` — fetches Google PageSpeed Insights v5 for any URL (desktop or mobile), returns performance score, Core Web Vitals (LCP, CLS, FCP, TBT, INP, Speed Index), top 5 improvement opportunities, and top 10 diagnostics. Results cached for 1 hour. Requires optional API key for higher quota.
@@ -220,6 +251,9 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 * Full audit logging with configurable retention.
 
 == Upgrade Notice ==
+
+= 1.6.0 =
+Adds Management, Diagnostics and Menus modules — plugin/theme activation, server diagnostics, nav menu and widget management, site settings read/write. 128 total tools across 14 modules.
 
 = 1.5.0 =
 New Performance module: PageSpeed Insights scores, Core Web Vitals, cache management (WP Rocket, LiteSpeed, W3TC, WP Super Cache) and image optimization tools. 105 total tools across 11 modules.
