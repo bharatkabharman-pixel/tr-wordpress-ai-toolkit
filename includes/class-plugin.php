@@ -49,6 +49,7 @@ class TR_AI_Toolkit_Plugin {
 		$this->abilities_manager->init();
 		$this->load_text_domain();
 		$this->schedule_log_pruning();
+		$this->init_github_updater();
 
 		if ( is_admin() ) {
 			require_once TR_AI_TOOLKIT_PATH . 'admin/class-admin.php';
@@ -70,6 +71,14 @@ class TR_AI_Toolkit_Plugin {
 		require_once TR_AI_TOOLKIT_PATH . 'includes/class-permissions.php';
 		require_once TR_AI_TOOLKIT_PATH . 'includes/class-logger.php';
 		require_once TR_AI_TOOLKIT_PATH . 'includes/class-abilities-manager.php';
+		require_once TR_AI_TOOLKIT_PATH . 'includes/class-github-updater.php';
+	}
+
+	/**
+	 * Initialises the GitHub-based auto-updater.
+	 */
+	private function init_github_updater(): void {
+		( new TR_AI_Toolkit_GitHub_Updater() )->init();
 	}
 
 	/**

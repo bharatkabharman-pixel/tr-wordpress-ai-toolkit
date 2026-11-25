@@ -4,7 +4,7 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -143,6 +143,9 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 
 == Changelog ==
 
+= 1.7.1 — 2026-11-25 =
+* Fixed: Plugin updates were not appearing in WordPress Dashboard → Updates. Added GitHub Releases auto-updater — WordPress now detects new versions directly from GitHub, shows the standard "Update available" notice, and handles one-click updates.
+
 = 1.7.0 — 2026-11-25 =
 * New module: Database (8 tools) — full database cleanup suite with confirm-required guards on all destructive operations.
 * New: `get-database-cleanup-report` — counts revisions, auto-drafts, trashed posts/comments, spam, expired transients, and orphaned meta in one call before you clean anything.
@@ -280,6 +283,9 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 * Full audit logging with configurable retention.
 
 == Upgrade Notice ==
+
+= 1.7.1 =
+Fixes missing WordPress auto-update notifications. Plugin now checks GitHub Releases and shows update notices in Dashboard → Updates automatically.
 
 = 1.7.0 =
 Adds Database cleanup, Security audit and Backup integration modules. All destructive database operations require confirm: true. 148 total tools across 17 modules.
