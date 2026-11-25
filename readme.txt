@@ -4,7 +4,7 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.7.5
+Stable tag: 1.7.6
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,6 +142,10 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 5. Activity Log showing recent AI tool invocations.
 
 == Changelog ==
+
+= 1.7.6 — 2026-11-25 =
+* Fixed: Plugin header description still showed "68 tools across 8 modules" — updated to "132 tools across 17 modules" to reflect all sprints.
+* Fixed: Tool count in readme.txt, README.md and plugin header was incorrectly listed as 148. Corrected to 132 (145 defined minus 14 WooCommerce tools that are hidden when WooCommerce is not active).
 
 = 1.7.5 — 2026-11-25 =
 * Fixed: Performance module tools (PageSpeed Insights, cache, image) were failing with "Tool execution failed" because the module received null for $settings. The abilities manager now detects via reflection whether a module constructor accepts a third $settings parameter and passes it only when needed.

@@ -2,7 +2,7 @@
 
 > Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site — manage content, media, SEO, plugins, themes, menus, database cleanup, security, backups and more using natural language.
 
-[![Version](https://img.shields.io/badge/version-1.7.5-blue.svg)](https://github.com/bharatkabharman-pixel/tr-wordpress-ai-toolkit/releases)
+[![Version](https://img.shields.io/badge/version-1.7.6-blue.svg)](https://github.com/bharatkabharman-pixel/tr-wordpress-ai-toolkit/releases)
 [![WordPress](https://img.shields.io/badge/WordPress-6.9%2B-21759b.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777bb4.svg)](https://php.net)
 [![License](https://img.shields.io/badge/license-GPL--2.0--or--later-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -320,6 +320,10 @@ Single-site only. Multisite support is planned for a future release.
 ---
 
 ## Changelog
+
+### 1.7.6
+- Fixed: Plugin header description was still showing "68 tools across 8 modules" (original Sprint 1 text) — updated to "132 tools across 17 modules"
+- Fixed: Tool count corrected from 148 to 132 across all documentation files
 
 ### 1.7.5
 - Fixed: Performance module tools (PageSpeed, cache, image) were crashing with "Tool execution failed" because `$settings` was null — abilities manager now uses reflection to pass settings only to modules that accept it
