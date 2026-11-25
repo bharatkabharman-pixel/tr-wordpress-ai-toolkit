@@ -57,6 +57,14 @@ class TR_AI_Toolkit_Permissions {
 	}
 
 	/**
+	 * Returns true when the current user can manage taxonomy terms
+	 * (create, update, delete, merge categories and tags).
+	 */
+	public function can_manage_terms(): bool {
+		return is_user_logged_in() && current_user_can( 'manage_categories' );
+	}
+
+	/**
 	 * Returns a WP_Error when a capability check fails, or true when it passes.
 	 *
 	 * @param string $check Method name on this class, e.g. 'can_read'.
