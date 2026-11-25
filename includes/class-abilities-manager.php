@@ -128,11 +128,23 @@ class TR_AI_Toolkit_Abilities_Manager {
 				'file'  => TR_AI_TOOLKIT_PATH . 'modules/menus/class-menus-module.php',
 				'class' => 'TR_AI_Toolkit_Menus_Module',
 			),
+			'database'     => array(
+				'file'  => TR_AI_TOOLKIT_PATH . 'modules/database/class-database-module.php',
+				'class' => 'TR_AI_Toolkit_Database_Module',
+			),
+			'security'     => array(
+				'file'  => TR_AI_TOOLKIT_PATH . 'modules/security/class-security-module.php',
+				'class' => 'TR_AI_Toolkit_Security_Module',
+			),
+			'backup'       => array(
+				'file'  => TR_AI_TOOLKIT_PATH . 'modules/backup/class-backup-module.php',
+				'class' => 'TR_AI_Toolkit_Backup_Module',
+			),
 		);
 
 		// Auto-expose any module that is not yet in the saved setting so that
 		// existing installs automatically gain new modules on update.
-		$auto_modules = array( 'woocommerce', 'comments', 'cpt', 'redirects', 'taxonomy', 'performance', 'management', 'diagnostics', 'menus' );
+		$auto_modules = array( 'woocommerce', 'comments', 'cpt', 'redirects', 'taxonomy', 'performance', 'management', 'diagnostics', 'menus', 'database', 'security', 'backup' );
 		$saved        = (array) $this->settings->get( 'mcp.exposed_modules', array() );
 		$exposed      = array_unique( array_merge( $saved, $auto_modules ) );
 

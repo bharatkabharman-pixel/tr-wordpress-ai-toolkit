@@ -4,11 +4,11 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.6.0
+Stable tag: 1.7.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, plugins, themes, menus, widgets, server diagnostics, WooCommerce and more using natural language. 128 tools across 14 modules.
+Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, plugins, themes, menus, database cleanup, security, backups and more using natural language. 148 tools across 17 modules.
 
 == Description ==
 
@@ -31,7 +31,7 @@ Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your Word
 
 **Supported AI clients:** Claude.ai Projects, Claude Desktop, Cursor, Windsurf, Codeium and any MCP 2025-03-26 / 2025-11-25 compliant client.
 
-= Modules and Tools (128 total) =
+= Modules and Tools (148 total) =
 
 * **Content (14 tools)** — List, search, create, update and trash posts and pages; manage categories and tags
 * **Media (7 tools)** — Browse, search and update media library metadata; find orphaned attachments; upload from URL with SSRF protection; find images missing alt text
@@ -45,6 +45,9 @@ Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your Word
 * **Management (8 tools)** — List, activate and deactivate plugins; check for plugin updates; list and activate themes; read and update site settings (blogname, timezone, discussion, reading)
 * **Diagnostics (6 tools)** — Server info, PHP configuration and extensions, database table sizes, disk usage, error log viewer, scheduled tasks (WP-Cron)
 * **Menus (9 tools)** — List nav menus and their theme-location assignments; get, add, update and delete menu items; create menus and assign to locations; list widget areas and their widgets
+* **Database (8 tools)** — Cleanup report; delete revisions, spam, trash, expired transients, orphaned meta; optimize tables; permanently delete a post (confirm required for all destructive actions)
+* **Security (7 tools)** — Security score report, file permission check, admin/editor user audit, inactive plugin risk check, WordPress core integrity verification, SSL certificate status, AI activity log
+* **Backup (5 tools)** — Detect active backup plugin (UpdraftPlus, BackWPup, Duplicator, All-in-One); list backup files; trigger backup; view schedule; backup storage disk usage
 
 = Key Features =
 
@@ -139,6 +142,32 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 5. Activity Log showing recent AI tool invocations.
 
 == Changelog ==
+
+= 1.7.0 — 2026-11-25 =
+* New module: Database (8 tools) — full database cleanup suite with confirm-required guards on all destructive operations.
+* New: `get-database-cleanup-report` — counts revisions, auto-drafts, trashed posts/comments, spam, expired transients, and orphaned meta in one call before you clean anything.
+* New: `cleanup-post-revisions` — deletes old revisions keeping the latest N per post (configurable, default 3). Requires confirm.
+* New: `cleanup-spam-comments` — permanently deletes all spam comments. Requires confirm.
+* New: `cleanup-trashed-content` — empties trash for posts and/or comments. Requires confirm.
+* New: `cleanup-expired-transients` — removes expired (or all) transients from the options table. Requires confirm.
+* New: `cleanup-orphaned-meta` — deletes post, comment and user meta with no matching parent record. Requires confirm.
+* New: `optimize-database-tables` — runs OPTIMIZE TABLE on all WordPress tables. Requires confirm.
+* New: `permanently-delete-post` — force-deletes a post bypassing trash. Requires confirm. Warns if post was published.
+* New module: Security (7 tools) — WordPress security auditing.
+* New: `get-security-report` — 0–100 security score with issues (−20 each) and warnings (−5 each) across SSL, WP version, plugin updates, file editor, debug mode, wp-config permissions, and admin count.
+* New: `check-file-permissions` — verifies octal permissions on wp-config.php, .htaccess, wp-admin/, wp-includes/, wp-content/ and uploads/ against recommended values.
+* New: `list-admin-users` — all admins and editors with registration date and a `is_new` flag for accounts under 7 days old.
+* New: `check-inactive-plugins` — lists inactive plugins with update availability and a note about their security risk.
+* New: `check-core-integrity` — compares md5 checksums of wp-admin/ and wp-includes/ against the WordPress.org API for the current version and locale. Reports modified and missing files.
+* New: `check-ssl-status` — reports HTTPS status, FORCE_SSL_ADMIN flag, and live certificate details (subject, issuer, expiry, days remaining) via stream_socket_client.
+* New: `get-user-activity-log` — returns recent AI tool invocations from the plugin's audit log table with user, IP, status and tool name.
+* New module: Backup (5 tools) — backup plugin integration.
+* New: `get-backup-status` — detects active backup plugin (UpdraftPlus, BackWPup, Duplicator, All-in-One WP Migration, WPvivid) and reports last backup age and health (ok/stale/unknown/no_plugin).
+* New: `list-backups` — lists existing backup ZIP files from UpdraftPlus storage directory sorted newest first.
+* New: `trigger-backup` — schedules an immediate UpdraftPlus backup via WP-Cron. Requires confirm. Returns plugin-specific instructions for other plugins.
+* New: `get-backup-schedule` — returns configured backup intervals, retention counts, remote storage destinations, and next scheduled WP-Cron events for UpdraftPlus.
+* New: `get-backup-storage-info` — scans known backup directories and reports path, file count and disk usage.
+* Total: 128 → 148 tools across 14 → 17 modules.
 
 = 1.6.0 — 2026-11-24 =
 * New module: Management (8 tools) — plugin activation/deactivation, plugin update status, theme listing and activation, site settings read/write.
@@ -251,6 +280,9 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 * Full audit logging with configurable retention.
 
 == Upgrade Notice ==
+
+= 1.7.0 =
+Adds Database cleanup, Security audit and Backup integration modules. All destructive database operations require confirm: true. 148 total tools across 17 modules.
 
 = 1.6.0 =
 Adds Management, Diagnostics and Menus modules — plugin/theme activation, server diagnostics, nav menu and widget management, site settings read/write. 128 total tools across 14 modules.
