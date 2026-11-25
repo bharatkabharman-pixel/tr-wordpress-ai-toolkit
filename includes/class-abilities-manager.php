@@ -191,18 +191,25 @@ class TR_AI_Toolkit_Abilities_Manager {
 	}
 
 	/**
-	 * Returns MCP tool definitions for all active modules.
+	 * Returns MCP tool definitions for all active, non-disabled modules.
+	 *
+	 * Tools listed in the `mcp.disabled_tools` setting are excluded so that
+	 * AI clients never see or call them.
 	 *
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function get_mcp_tools(): array {
 		$this->ensure_modules_loaded();
 
+		$disabled = (array) $this->settings->get( 'mcp.disabled_tools', array() );
+
 		$tools = array();
 		foreach ( $this->modules as $module ) {
 			if ( method_exists( $module, 'get_mcp_tools' ) ) {
 				foreach ( $module->get_mcp_tools() as $tool ) {
-					$tools[] = $tool;
+					if ( ! in_array( $tool['name'], $disabled, true ) ) {
+						$tools[] = $tool;
+					}
 				}
 			}
 		}
@@ -213,12 +220,19 @@ class TR_AI_Toolkit_Abilities_Manager {
 	/**
 	 * Executes an MCP tool by name, delegating to the responsible module.
 	 *
+	 * Returns a 403 WP_Error if the tool is in the `mcp.disabled_tools` list.
+	 *
 	 * @param string               $name Tool name.
 	 * @param array<string, mixed> $args Tool arguments.
 	 * @return mixed
 	 */
 	public function execute_mcp_tool( string $name, array $args ): mixed {
 		$this->ensure_modules_loaded();
+
+		$disabled = (array) $this->settings->get( 'mcp.disabled_tools', array() );
+		if ( in_array( $name, $disabled, true ) ) {
+			return new \WP_Error( 'tool_disabled', "Tool '{$name}' is disabled by the site administrator.", array( 'status' => 403 ) );
+		}
 
 		foreach ( $this->modules as $module ) {
 			if ( method_exists( $module, 'handles' ) && $module->handles( $name ) ) {

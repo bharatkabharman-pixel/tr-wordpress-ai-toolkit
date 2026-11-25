@@ -108,6 +108,102 @@ defined( 'ABSPATH' ) || exit;
 			</table>
 		</div>
 
+		<!-- Tool Access -->
+		<div class="tr-section">
+			<h2><?php esc_html_e( 'Tool Access', 'tr-wordpress-ai-toolkit' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Enable or disable individual tools. Disabled tools are hidden from AI clients and cannot be called. All tools are enabled by default.', 'tr-wordpress-ai-toolkit' ); ?>
+			</p>
+			<?php
+			$disabled_tools  = (array) $settings->get( 'mcp.disabled_tools', array() );
+			$loaded_modules  = $abilities_manager->get_modules();
+
+			$module_names = array(
+				'content'     => __( 'Content', 'tr-wordpress-ai-toolkit' ),
+				'media'       => __( 'Media', 'tr-wordpress-ai-toolkit' ),
+				'seo'         => __( 'SEO', 'tr-wordpress-ai-toolkit' ),
+				'health'      => __( 'Health', 'tr-wordpress-ai-toolkit' ),
+				'users'       => __( 'Users', 'tr-wordpress-ai-toolkit' ),
+				'woocommerce' => __( 'WooCommerce', 'tr-wordpress-ai-toolkit' ),
+				'comments'    => __( 'Comments', 'tr-wordpress-ai-toolkit' ),
+				'cpt'         => __( 'Custom Post Types', 'tr-wordpress-ai-toolkit' ),
+				'redirects'   => __( 'Redirects', 'tr-wordpress-ai-toolkit' ),
+				'taxonomy'    => __( 'Taxonomy', 'tr-wordpress-ai-toolkit' ),
+				'performance' => __( 'Performance', 'tr-wordpress-ai-toolkit' ),
+				'management'  => __( 'Management', 'tr-wordpress-ai-toolkit' ),
+				'diagnostics' => __( 'Diagnostics', 'tr-wordpress-ai-toolkit' ),
+				'menus'       => __( 'Menus', 'tr-wordpress-ai-toolkit' ),
+				'database'    => __( 'Database', 'tr-wordpress-ai-toolkit' ),
+				'security'    => __( 'Security', 'tr-wordpress-ai-toolkit' ),
+				'backup'      => __( 'Backup', 'tr-wordpress-ai-toolkit' ),
+			);
+
+			if ( empty( $loaded_modules ) ) : ?>
+				<p class="description"><?php esc_html_e( 'No modules loaded. Enable at least one module above and save settings.', 'tr-wordpress-ai-toolkit' ); ?></p>
+			<?php else :
+				foreach ( $loaded_modules as $slug => $module_obj ) :
+					if ( ! method_exists( $module_obj, 'get_mcp_tools' ) ) continue;
+					$module_tools = $module_obj->get_mcp_tools();
+					if ( empty( $module_tools ) ) continue;
+					$module_label     = $module_names[ $slug ] ?? ucfirst( $slug );
+					$total            = count( $module_tools );
+					$disabled_in_mod  = count( array_filter( $module_tools, fn( $t ) => in_array( $t['name'], $disabled_tools, true ) ) );
+			?>
+			<details class="tr-tool-group" style="margin-bottom:12px;border:1px solid #ddd;border-radius:4px;">
+				<summary style="padding:10px 14px;cursor:pointer;font-weight:600;background:#f9f9f9;border-radius:4px;list-style:none;display:flex;align-items:center;justify-content:space-between;">
+					<span><?php echo esc_html( $module_label ); ?>
+						<span style="font-weight:400;color:#666;margin-left:6px;">
+							(<?php echo esc_html( $total - $disabled_in_mod ); ?>/<?php echo esc_html( $total ); ?> <?php esc_html_e( 'enabled', 'tr-wordpress-ai-toolkit' ); ?>)
+						</span>
+					</span>
+					<span style="font-size:11px;color:#999;">▼</span>
+				</summary>
+				<div style="padding:10px 14px;">
+					<p style="margin:0 0 8px;">
+						<a href="#" class="tr-toggle-all-module button button-small" data-module="<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Enable All', 'tr-wordpress-ai-toolkit' ); ?></a>
+						<a href="#" class="tr-toggle-none-module button button-small" data-module="<?php echo esc_attr( $slug ); ?>" style="margin-left:4px;"><?php esc_html_e( 'Disable All', 'tr-wordpress-ai-toolkit' ); ?></a>
+					</p>
+					<table class="widefat striped" style="margin-top:4px;">
+						<thead>
+							<tr>
+								<th style="width:36px;"><?php esc_html_e( 'On', 'tr-wordpress-ai-toolkit' ); ?></th>
+								<th><?php esc_html_e( 'Tool Name', 'tr-wordpress-ai-toolkit' ); ?></th>
+								<th><?php esc_html_e( 'Description', 'tr-wordpress-ai-toolkit' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ( $module_tools as $tool ) :
+								$tool_name    = $tool['name'];
+								$tool_desc    = $tool['description'] ?? '';
+								$is_enabled   = ! in_array( $tool_name, $disabled_tools, true );
+							?>
+							<tr>
+								<td>
+									<input
+										type="checkbox"
+										class="tr-tool-checkbox"
+										data-module="<?php echo esc_attr( $slug ); ?>"
+										name="enabled_tools[]"
+										value="<?php echo esc_attr( $tool_name ); ?>"
+										<?php checked( $is_enabled ); ?>
+									>
+								</td>
+								<td><code style="font-size:11px;"><?php echo esc_html( str_replace( 'tr-ai-toolkit-', '', $tool_name ) ); ?></code></td>
+								<td style="color:#555;font-size:12px;"><?php echo esc_html( wp_trim_words( $tool_desc, 15 ) ); ?></td>
+							</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+				</div>
+			</details>
+			<?php endforeach;
+			endif;
+			?>
+			<p class="description" style="margin-top:8px;">
+				<?php esc_html_e( 'Tip: Disabling a module above removes all its tools. Use tool-level toggles for fine-grained control within an enabled module.', 'tr-wordpress-ai-toolkit' ); ?>
+			</p>
+		</div>
+
 		<!-- Permissions -->
 		<div class="tr-section">
 			<h2><?php esc_html_e( 'Permissions', 'tr-wordpress-ai-toolkit' ); ?></h2>

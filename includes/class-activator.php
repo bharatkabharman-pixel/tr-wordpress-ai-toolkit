@@ -133,6 +133,7 @@ class TR_AI_Toolkit_Activator {
 			'mcp'         => array(
 				'server_name'     => get_bloginfo( 'name' ) . ' - TR AI Toolkit',
 				'exposed_modules' => array( 'content', 'media', 'seo', 'health', 'users' ),
+				'disabled_tools'  => array(),
 			),
 			'logging'      => array(
 				'enabled'        => true,

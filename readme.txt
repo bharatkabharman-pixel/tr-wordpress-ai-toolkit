@@ -4,7 +4,7 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.7.2
+Stable tag: 1.7.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,6 +142,12 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 5. Activity Log showing recent AI tool invocations.
 
 == Changelog ==
+
+= 1.7.3 — 2026-11-25 =
+* New: Per-tool enable/disable in Settings → Tool Access. Each tool can be individually toggled. Disabled tools are hidden from AI clients and return a 403 error if called directly. All tools remain enabled by default.
+* New: "Enable All" / "Disable All" button per module group in Tool Access section for quick bulk toggling.
+* Settings page now shows tool count per module (e.g. "12/12 enabled") and updates live as checkboxes are toggled.
+* Technically: `mcp.disabled_tools` array stored in plugin settings; `get_mcp_tools()` filters it out; `execute_mcp_tool()` returns WP_Error 403 for disabled tools.
 
 = 1.7.2 — 2026-11-25 =
 * Fixed: Dashboard showed only 8 modules with outdated tool counts after upgrading. Dashboard now reads live data directly from the loaded module instances — counts and status are always accurate.

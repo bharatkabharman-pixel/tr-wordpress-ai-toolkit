@@ -176,8 +176,9 @@ class TR_AI_Toolkit_Admin {
 	public function render_settings(): void {
 		$this->check_capability( 'manage_options' );
 		$data = array(
-			'settings' => $this->settings,
-			'saved'    => isset( $_GET['settings-saved'] ) && '1' === $_GET['settings-saved'], // phpcs:ignore WordPress.Security.NonceVerification
+			'settings'          => $this->settings,
+			'abilities_manager' => $this->abilities_manager,
+			'saved'             => isset( $_GET['settings-saved'] ) && '1' === $_GET['settings-saved'], // phpcs:ignore WordPress.Security.NonceVerification
 		);
 		$this->render_view( 'settings', $data );
 	}
@@ -435,12 +436,28 @@ class TR_AI_Toolkit_Admin {
 			'database', 'security', 'backup',
 		);
 
+		// Form posts enabled_tools[] for each checked (enabled) tool.
+		// Compute disabled = all known tools minus the enabled ones submitted.
+		$all_tool_names = array_map(
+			fn( $t ) => $t['name'],
+			$this->abilities_manager->get_mcp_tools()
+		);
+
+		$posted_enabled = array_filter(
+			(array) ( $_POST['enabled_tools'] ?? array() ),
+			fn( $name ) => (bool) preg_match( '/^tr-ai-toolkit-[a-z0-9-]+$/', $name )
+		);
+		$posted_enabled = array_map( 'sanitize_key', $posted_enabled );
+
+		$computed_disabled = array_values( array_diff( $all_tool_names, $posted_enabled ) );
+
 		$mcp = array(
 			'server_name'     => sanitize_text_field( $_POST['server_name'] ?? '' ),
 			'exposed_modules' => array_values( array_intersect(
 				(array) ( $_POST['exposed_modules'] ?? array() ),
 				$valid_module_slugs
 			) ),
+			'disabled_tools'  => $computed_disabled,
 		);
 
 		$logging = array(
