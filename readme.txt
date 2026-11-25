@@ -8,7 +8,7 @@ Stable tag: 1.7.5
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, plugins, themes, menus, database cleanup, security, backups and more using natural language. 148 tools across 17 modules.
+Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your WordPress site. Manage content, media, SEO, plugins, themes, menus, database cleanup, security, backups and more using natural language. 132 tools across 17 modules.
 
 == Description ==
 
@@ -31,7 +31,7 @@ Connect Claude, Copilot, Cursor and any MCP-compatible AI assistant to your Word
 
 **Supported AI clients:** Claude.ai Projects, Claude Desktop, Cursor, Windsurf, Codeium and any MCP 2025-03-26 / 2025-11-25 compliant client.
 
-= Modules and Tools (148 total) =
+= Modules and Tools (132 total) =
 
 * **Content (14 tools)** — List, search, create, update and trash posts and pages; manage categories and tags
 * **Media (7 tools)** — Browse, search and update media library metadata; find orphaned attachments; upload from URL with SSRF protection; find images missing alt text
@@ -188,7 +188,7 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 * New: `trigger-backup` — schedules an immediate UpdraftPlus backup via WP-Cron. Requires confirm. Returns plugin-specific instructions for other plugins.
 * New: `get-backup-schedule` — returns configured backup intervals, retention counts, remote storage destinations, and next scheduled WP-Cron events for UpdraftPlus.
 * New: `get-backup-storage-info` — scans known backup directories and reports path, file count and disk usage.
-* Total: 128 → 148 tools across 14 → 17 modules.
+* Total: 128 → 132 tools across 14 → 17 modules.
 
 = 1.6.0 — 2026-11-24 =
 * New module: Management (8 tools) — plugin activation/deactivation, plugin update status, theme listing and activation, site settings read/write.
@@ -309,7 +309,7 @@ Critical fix: dashboard showed only 8 modules after upgrade, settings page did n
 Fixes missing WordPress auto-update notifications. Plugin now checks GitHub Releases and shows update notices in Dashboard → Updates automatically.
 
 = 1.7.0 =
-Adds Database cleanup, Security audit and Backup integration modules. All destructive database operations require confirm: true. 148 total tools across 17 modules.
+Adds Database cleanup, Security audit and Backup integration modules. All destructive database operations require confirm: true. 132 total tools across 17 modules.
 
 = 1.6.0 =
 Adds Management, Diagnostics and Menus modules — plugin/theme activation, server diagnostics, nav menu and widget management, site settings read/write. 128 total tools across 14 modules.

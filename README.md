@@ -11,7 +11,7 @@
 
 ## What It Does
 
-TR WordPress AI Toolkit gives AI assistants direct access to your WordPress site through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io). The plugin exposes **148 tools** across **17 modules** — all secured by WordPress capability checks.
+TR WordPress AI Toolkit gives AI assistants direct access to your WordPress site through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io). The plugin exposes **132 tools** across **17 modules** — all secured by WordPress capability checks.
 
 Once connected, you manage your site in plain English:
 
@@ -136,7 +136,7 @@ The plugin uses **WordPress Application Passwords** (built into WordPress 5.6+).
 
 ## Modules and Tools
 
-**148 tools across 17 modules.**
+**132 tools across 17 modules.**
 
 | Module | Tools | Highlights |
 |--------|------:|------------|
