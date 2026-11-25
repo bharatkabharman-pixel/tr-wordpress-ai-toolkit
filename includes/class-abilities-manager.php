@@ -187,6 +187,7 @@ class TR_AI_Toolkit_Abilities_Manager {
 	 * @return array<string, object>
 	 */
 	public function get_modules(): array {
+		$this->ensure_modules_loaded();
 		return $this->modules;
 	}
 
@@ -245,9 +246,14 @@ class TR_AI_Toolkit_Abilities_Manager {
 
 	/**
 	 * Loads modules if they haven't been loaded yet.
+	 * Guards against calling register_abilities() when the Abilities API is unavailable.
 	 */
 	private function ensure_modules_loaded(): void {
-		if ( empty( $this->modules ) ) {
+		if ( ! empty( $this->modules ) ) {
+			return;
+		}
+
+		if ( function_exists( 'wp_register_ability' ) ) {
 			$this->register_abilities();
 		}
 	}

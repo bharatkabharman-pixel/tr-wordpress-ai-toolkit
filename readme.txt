@@ -4,7 +4,7 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.7.3
+Stable tag: 1.7.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,6 +142,9 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 5. Activity Log showing recent AI tool invocations.
 
 == Changelog ==
+
+= 1.7.4 — 2026-11-25 =
+* Fixed: Dashboard showed "Active Modules: 0/17" because `get_modules()` was returning an empty array when the `wp_abilities_api_init` hook had not yet fired at render time. `get_modules()` now calls `ensure_modules_loaded()` so modules are always populated before the dashboard reads them.
 
 = 1.7.3 — 2026-11-25 =
 * New: Per-tool enable/disable in Settings → Tool Access. Each tool can be individually toggled. Disabled tools are hidden from AI clients and return a 403 error if called directly. All tools remain enabled by default.
