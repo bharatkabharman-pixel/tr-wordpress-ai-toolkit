@@ -4,7 +4,7 @@ Tags: ai, mcp, model context protocol, claude, ai assistant, content management,
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,6 +142,12 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 5. Activity Log showing recent AI tool invocations.
 
 == Changelog ==
+
+= 1.7.2 — 2026-11-25 =
+* Fixed: Dashboard showed only 8 modules with outdated tool counts after upgrading. Dashboard now reads live data directly from the loaded module instances — counts and status are always accurate.
+* Fixed: Settings page only listed the original 8 modules. All 17 modules are now shown with correct tool counts and updated descriptions.
+* Fixed: `handle_save_settings()` had a hardcoded whitelist of only 8 module slugs — saving settings stripped out all Sprint 1–4 modules from exposed_modules. Whitelist now includes all 17 valid module slugs.
+* Fixed: Auto-expose logic in settings.php only merged `woocommerce`, `comments`, `cpt` — did not include Sprint 1–4 modules. Fixed to merge all 12 auto-exposed module slugs.
 
 = 1.7.1 — 2026-11-25 =
 * Fixed: Plugin updates were not appearing in WordPress Dashboard → Updates. Added GitHub Releases auto-updater — WordPress now detects new versions directly from GitHub, shows the standard "Update available" notice, and handles one-click updates.
@@ -283,6 +289,9 @@ Upgrade to v1.2.2 or later. Versions before 1.2.2 used forward slashes in tool n
 * Full audit logging with configurable retention.
 
 == Upgrade Notice ==
+
+= 1.7.2 =
+Critical fix: dashboard showed only 8 modules after upgrade, settings page did not list new modules, saving settings stripped out all Sprint 1-4 modules. All 17 modules now correctly displayed, saved and loaded.
 
 = 1.7.1 =
 Fixes missing WordPress auto-update notifications. Plugin now checks GitHub Releases and shows update notices in Dashboard → Updates automatically.

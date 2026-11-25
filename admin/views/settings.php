@@ -70,24 +70,31 @@ defined( 'ABSPATH' ) || exit;
 						<?php
 						$modules = array(
 							'content'     => __( 'Content — posts, pages, categories, tags (14 tools)', 'tr-wordpress-ai-toolkit' ),
-							'media'       => __( 'Media — library browsing and metadata (5 tools)', 'tr-wordpress-ai-toolkit' ),
-							'seo'         => __( 'SEO Analysis — audits and content checks (5 tools)', 'tr-wordpress-ai-toolkit' ),
-							'health'      => __( 'Website Health — system info, plugins, theme (7 tools)', 'tr-wordpress-ai-toolkit' ),
-							'users'       => __( 'Users — listing and role inspection (4 tools)', 'tr-wordpress-ai-toolkit' ),
-							'woocommerce' => __( 'WooCommerce — products, orders, customers, coupons (12 tools — auto-skipped if WooCommerce inactive)', 'tr-wordpress-ai-toolkit' ),
-							'comments'    => __( 'Comments — moderation, approve, trash, reply (6 tools)', 'tr-wordpress-ai-toolkit' ),
+							'media'       => __( 'Media — library browsing, upload, metadata (7 tools)', 'tr-wordpress-ai-toolkit' ),
+							'seo'         => __( 'SEO — meta, OG, robots, sitemap, content analysis (9 tools)', 'tr-wordpress-ai-toolkit' ),
+							'health'      => __( 'Health — WordPress info, plugins, theme, cron (7 tools)', 'tr-wordpress-ai-toolkit' ),
+							'users'       => __( 'Users — list, search, create, update, delete (7 tools)', 'tr-wordpress-ai-toolkit' ),
+							'woocommerce' => __( 'WooCommerce — products, orders, customers, coupons (14 tools — auto-skipped if WooCommerce inactive)', 'tr-wordpress-ai-toolkit' ),
+							'comments'    => __( 'Comments — moderation, approve, trash, reply (8 tools)', 'tr-wordpress-ai-toolkit' ),
 							'cpt'         => __( 'Custom Post Types — manage any registered CPT (5 tools)', 'tr-wordpress-ai-toolkit' ),
+							'redirects'   => __( 'Redirects — list, create, update, delete via Redirection plugin (6 tools)', 'tr-wordpress-ai-toolkit' ),
+							'taxonomy'    => __( 'Taxonomy — categories and tags CRUD, merge, SEO meta (10 tools)', 'tr-wordpress-ai-toolkit' ),
+							'performance' => __( 'Performance — PageSpeed Insights, cache management, image optimization (12 tools)', 'tr-wordpress-ai-toolkit' ),
+							'management'  => __( 'Management — plugin/theme activation, site settings read/write (8 tools)', 'tr-wordpress-ai-toolkit' ),
+							'diagnostics' => __( 'Diagnostics — server info, PHP config, database stats, disk usage, error log (6 tools)', 'tr-wordpress-ai-toolkit' ),
+							'menus'       => __( 'Menus — navigation menus, menu items, widget areas (9 tools)', 'tr-wordpress-ai-toolkit' ),
+							'database'    => __( 'Database — cleanup revisions, spam, transients, orphaned meta, optimize tables (8 tools)', 'tr-wordpress-ai-toolkit' ),
+							'security'    => __( 'Security — security audit, file permissions, core integrity, SSL, activity log (7 tools)', 'tr-wordpress-ai-toolkit' ),
+							'backup'      => __( 'Backup — backup status, schedule and storage via UpdraftPlus and others (5 tools)', 'tr-wordpress-ai-toolkit' ),
 						);
-						$all_slugs = array_keys( $modules );
-						$saved     = $settings->get( 'mcp.exposed_modules', null );
+						$all_slugs     = array_keys( $modules );
+						$auto_modules  = array( 'woocommerce', 'comments', 'cpt', 'redirects', 'taxonomy', 'performance', 'management', 'diagnostics', 'menus', 'database', 'security', 'backup' );
+						$saved         = $settings->get( 'mcp.exposed_modules', null );
 						if ( $saved === null ) {
 							$exposed = $all_slugs;
 						} else {
-							// Auto-add new modules for installs upgrading from v1.1.0.
-							$new_modules = array( 'woocommerce', 'comments', 'cpt' );
-							$exposed = ( empty( array_intersect( $new_modules, (array) $saved ) ) )
-								? array_unique( array_merge( (array) $saved, $new_modules ) )
-								: (array) $saved;
+							// Auto-expose any new module slugs that aren't yet in the saved setting.
+							$exposed = array_unique( array_merge( (array) $saved, $auto_modules ) );
 						}
 						foreach ( $modules as $slug => $label ) :
 						?>

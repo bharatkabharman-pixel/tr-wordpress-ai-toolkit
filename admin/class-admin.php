@@ -427,12 +427,20 @@ class TR_AI_Toolkit_Admin {
 			'admin_capability' => in_array( $_POST['admin_capability'] ?? 'manage_options', $allowed_caps, true ) ? sanitize_key( $_POST['admin_capability'] ) : 'manage_options',
 		);
 
+		$valid_module_slugs = array(
+			'content', 'media', 'seo', 'health', 'users',
+			'woocommerce', 'comments', 'cpt',
+			'redirects', 'taxonomy', 'performance',
+			'management', 'diagnostics', 'menus',
+			'database', 'security', 'backup',
+		);
+
 		$mcp = array(
 			'server_name'     => sanitize_text_field( $_POST['server_name'] ?? '' ),
-			'exposed_modules' => array_intersect(
+			'exposed_modules' => array_values( array_intersect(
 				(array) ( $_POST['exposed_modules'] ?? array() ),
-				array( 'content', 'media', 'seo', 'health', 'users', 'woocommerce', 'comments', 'cpt' )
-			),
+				$valid_module_slugs
+			) ),
 		);
 
 		$logging = array(
