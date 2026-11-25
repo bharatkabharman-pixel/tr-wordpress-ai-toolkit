@@ -168,7 +168,11 @@ class TR_AI_Toolkit_Abilities_Manager {
 				continue;
 			}
 
-			$module = new $class( $this->permissions, $this->logger );
+			// Pass $settings as 3rd arg only to modules whose constructor accepts it.
+			$param_count = ( new \ReflectionClass( $class ) )->getConstructor()->getNumberOfParameters();
+			$module      = $param_count >= 3
+				? new $class( $this->permissions, $this->logger, $this->settings )
+				: new $class( $this->permissions, $this->logger );
 			$module->register();
 			$this->modules[ $slug ] = $module;
 		}
